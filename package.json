@@ -1,0 +1,11 @@
+{
+  "name": "stock-scope",
+  "dependencies": {
+    "moment": "^2.11.2",
+    "request": "^2.69.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-ts": "^5.3.2"
+  }
+}

@@ -1,7 +1,9 @@
 {
   "name": "stock-scope",
   "dependencies": {
+    "express": "^4.13.4",
     "moment": "^2.11.2",
+    "mongodb": "^2.1.7",
     "request": "^2.69.0"
   },
   "devDependencies": {

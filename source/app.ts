@@ -1,11 +1,21 @@
-import {getOHLCData} from './services/yahooService';
+/// <reference path="../typings/tsd.d.ts" />
 
-getOHLCData({
-    stock:'AJANTPHARM',
-    startDate:new Date(2016,2,3),
-    endDate:new Date(2016,2,4)
-}).then(data => {
-    console.log(data);
+import * as DB from './services/mongoDbService';
+import * as Server from './server';
+
+DB.connect()
+
+.then(()=>{
+    console.log('db connected.');
+    return Server.start();
+},()=>{
+    return Promise.reject('db-error');
+})
+
+.then((port)=>{
+    console.log('server listening at '+port+'.');
 },error => {
     console.log(error);
-});
+})
+
+;

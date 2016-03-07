@@ -23,7 +23,7 @@ const transformOHLCData = ({Symbol,Date,Open,High,Low,Close,Volume}) => {
     };
 };
 
-export const getOHLCData = ({stock,startDate,endDate}) => {
+export const getHistoricData = ({stock,startDate,endDate}) => {
 
     const q = query
         .replace('<STOCK>',stock)
@@ -34,12 +34,10 @@ export const getOHLCData = ({stock,startDate,endDate}) => {
         request({uri,qs:{env,format,q},json:true},(error, response, body) => {
             if(error){
                 reject(error);
+            } else if(body.query.count === 0){
+                resolve([]);
             } else {
-                if(body.query.count === 0){
-                    resolve([]);
-                } else {
-                    resolve(body.query.results.quote.map(datum => transformOHLCData(datum)));
-                }
+                resolve(body.query.results.quote.map(datum => transformOHLCData(datum)));
             }
         });
     });

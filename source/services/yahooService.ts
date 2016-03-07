@@ -14,7 +14,7 @@ const query = 'select * from yahoo.finance.historicaldata'+
 const transformOHLCData = ({Symbol,Date,Open,High,Low,Close,Volume}) => {
     return {
         symbol:Symbol.substring(0,Symbol.indexOf('.NS')),
-        date:moment(Date).toDate(),
+        date:Date,
         open:parseFloat(Open),
         high:parseFloat(High),
         low:parseFloat(Low),

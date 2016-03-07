@@ -33,7 +33,20 @@ module.exports = function(grunt){
                         title:'Stock Scope',
                         filename:'index.html'
                     })
-                ]
+                ],
+                // module:{
+                //     loaders:[
+                //         {
+                //             test: /\.json$/, loader: 'json-loader'
+                //         }
+                //     ]
+                // },
+                // node:{
+                //     console:'empty',
+                //     fs:'empty',
+                //     net:'empty',
+                //     tls:'empty'
+                // }
             }
         },
         

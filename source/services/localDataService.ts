@@ -1,20 +1,17 @@
 /// <reference path="../../typings/tsd.d.ts" />
 
-import * as yahoo from './yahooService';
-import * as DB from './mongoDbService';
+let _stocksList:any[];
 
-export const getStockData = yahoo.getHistoricData;
+export const setStocksList = (stocksList) => {
+    _stocksList = stocksList;
+};
 
 export const getAllIndustries = () => {
     const industries = []; 
-    return DB.get('nifty500',{}).then((stocks:any[])=>{
-        stocks.forEach(stock => {
-            if(industries.indexOf(stock.industry) === -1){
-                industries.push(stock.industry);
-            }
-        });
-        return Promise.resolve(industries);
-    },()=>{
-        return Promise.reject('db-error');
+    _stocksList.forEach(stock => {
+        if(industries.indexOf(stock.industry) === -1){
+            industries.push(stock.industry);
+        }
     });
+    return industries;
 };

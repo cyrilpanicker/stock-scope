@@ -1,17 +1,37 @@
 /// <reference path="../typings/tsd.d.ts" />
 
-import * as DB from './services/mongoDbService';
+import {setStocksList} from './services/localDataService';
+import {readFileAsync} from './services/promisifiedServices';
+import {getCandleData} from './services/quandalService';
+import {addMovingAverage} from './services/simpleMovingAverage';
 import * as Server from './server';
 
-DB.connect()
-.then(()=>{
-    console.log('db connected.');
+readFileAsync('./data/stocksList.json')
+
+.then((data:string) => {
+    setStocksList(JSON.parse(data));
+    console.log('stocks-list has been set.');
     return Server.start();
-},()=>{
-    return Promise.reject('db-error');
+},(error) => {
+    return Promise.reject(error);
 })
+
 .then((port)=>{
     console.log('server listening at '+port+'.');
 },error => {
     console.log(error);
 });
+
+// import * as DB from './services/mongoDbService';
+// DB.connect()
+// .then(()=>{
+//     console.log('db connected.');
+//     return Server.start();
+// },()=>{
+//     return Promise.reject('db-error');
+// })
+// .then((port)=>{
+//     console.log('server listening at '+port+'.');
+// },error => {
+//     console.log(error);
+// });

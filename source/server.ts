@@ -1,7 +1,9 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 import * as express from 'express';
-import * as dataService from './services/localDataService';
+import {getAllIndustries} from './services/localDataService';
+import {getCandleData} from './services/quandalService';
+import {addMovingAverage} from './services/simpleMovingAverage'
 
 const PORT = 8080;
 
@@ -10,15 +12,18 @@ const app = express();
 app.use(express.static('./build/client/public'));
 
 app.get('/stockdata/:stock',(request,response) => {
-    dataService.getStockData({
+    getCandleData({
         stock:request.params.stock,
-        startDate:new Date(2016,1,29),
-        endDate:new Date(2016,2,4)
+        endDate:new Date()
     }).then((data) => {
-        response.send(data);
+        response.send(addMovingAverage({data,property:'close',period:55}));
     },(error) => {
         response.status(500).send(error);
     });
+});
+
+app.get('/industries',(request,response) => {
+    response.send(getAllIndustries());
 });
 
 export const start = () => {

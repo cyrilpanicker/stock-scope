@@ -11,7 +11,7 @@ const query = 'select * from yahoo.finance.historicaldata'+
     ' and startDate = "<START-DATE>"'+
     ' and endDate = "<END-DATE>"';
     
-const transformOHLCData = ({Symbol,Date,Open,High,Low,Close,Volume}) => {
+const transformCandleData = ({Symbol,Date,Open,High,Low,Close,Volume}) => {
     return {
         symbol:Symbol.substring(0,Symbol.indexOf('.NS')),
         date:Date,
@@ -23,7 +23,7 @@ const transformOHLCData = ({Symbol,Date,Open,High,Low,Close,Volume}) => {
     };
 };
 
-export const getHistoricData = ({stock,startDate,endDate}) => {
+export const getCandleData = ({stock,startDate,endDate}) => {
 
     const q = query
         .replace('<STOCK>',stock)
@@ -37,7 +37,7 @@ export const getHistoricData = ({stock,startDate,endDate}) => {
             } else if(body.query.count === 0){
                 resolve([]);
             } else {
-                resolve(body.query.results.quote.map(datum => transformOHLCData(datum)));
+                resolve(body.query.results.quote.map(datum => transformCandleData(datum)));
             }
         });
     });

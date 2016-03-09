@@ -2,9 +2,9 @@
 
 import * as express from 'express';
 import {getAllIndustries} from './services/localDataService';
-import {getCandleData} from './services/quandlService';
+import {getCandleData} from './services/yahooService';
 
-const PORT = 8080;
+const PORT = 8000;
 
 const app = express();
 

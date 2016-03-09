@@ -34,6 +34,7 @@ module.exports = function(grunt){
                         filename:'index.html'
                     })
                 ],
+                devtool:'inline-source-map'
                 // module:{
                 //     loaders:[
                 //         {

@@ -14,10 +14,9 @@ $(() => {
             candleArray.addSMA(8).addSMA(21).addSMA(55);
             let candles = candleArray.getCandles();
             candles = candles.filter(candle => (!!candle.ma8 && !!candle.ma21 && !!candle.ma55));
-
-            const width = 1400;
-            const height = 500;
-            const margin = 10;
+            const width = 1280;
+            const height = 400;
+            const margin = 50;
             const candleWidth = 0.5 * (width - 2*margin)/candles.length;
 
             const priceScale = d3.scale.linear()
@@ -26,12 +25,12 @@ $(() => {
 
             const dateScale = d3.scale.ordinal<string,number>()
                 .domain(candles.map(candle => candle.date))
-                .rangeRoundPoints([margin,width-margin]);
+                .rangePoints([margin,width-margin]);
                 
             const smaList = [
-                {property:'ma8',color:'#00009C'},
-                {property:'ma21',color:'#0087BD'},
-                {property:'ma55',color:'#A2ADD0'}
+                {property:'ma8',color:'red'},
+                {property:'ma21',color:'blue'},
+                {property:'ma55',color:'yellow'}
             ];
             
             
@@ -61,15 +60,6 @@ $(() => {
                 .attr('stroke',sma => sma.color)
                 .attr('fill','none')
                 .attr('d',pathMapper)
-        },
-        error:(error) => {
-            console.log(error);
-        }
-    });
-    $.ajax({
-        url:'/industries',
-        success:(data)=>{
-            console.log(data);
         },
         error:(error) => {
             console.log(error);

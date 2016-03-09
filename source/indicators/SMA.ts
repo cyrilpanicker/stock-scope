@@ -8,18 +8,27 @@ const average = function(data:number[]){
 	});
 };
 
-export const addMovingAverage = function({data,property,period}){
-    return data.map((datum,index) => {
-        if(index < period-1){
-            return assign({},datum);
-        } else {
-            const newDatum = assign({},datum);
-            newDatum['ma'+period] = average(
+export const addSMA = function({data,property,period}){
+    
+    for (var index = 0; index < data.length; index++) {
+        if(index >= period-1){
+            data[index]['ma'+period] = average(
                 data.slice(index+1-period,index+1).map(datum => datum[property])
             );
-            return newDatum;
         }
-    });
+    }
+    
+    // return data.map((datum,index) => {
+    //     if(index < period-1){
+    //         return assign({},datum);
+    //     } else {
+    //         const newDatum = assign({},datum);
+    //         newDatum['ma'+period] = average(
+    //             data.slice(index+1-period,index+1).map(datum => datum[property])
+    //         );
+    //         return newDatum;
+    //     }
+    // });
 }
 
 // const input = [

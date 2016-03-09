@@ -2,8 +2,7 @@
 
 import * as express from 'express';
 import {getAllIndustries} from './services/localDataService';
-import {getCandleData} from './services/quandalService';
-import {addMovingAverage} from './services/simpleMovingAverage'
+import {getCandleData} from './services/quandlService';
 
 const PORT = 8080;
 
@@ -15,8 +14,9 @@ app.get('/stockdata/:stock',(request,response) => {
     getCandleData({
         stock:request.params.stock,
         endDate:new Date()
-    }).then((data) => {
-        response.send(addMovingAverage({data,property:'close',period:55}));
+    }).then(candleData => {
+        candleData.addSMA(8).addSMA(21).addSMA(55);
+        response.send(candleData.getCandles());
     },(error) => {
         response.status(500).send(error);
     });

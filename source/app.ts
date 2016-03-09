@@ -2,8 +2,6 @@
 
 import {setStocksList} from './services/localDataService';
 import {readFileAsync} from './services/promisifiedServices';
-import {getCandleData} from './services/quandalService';
-import {addMovingAverage} from './services/simpleMovingAverage';
 import * as Server from './server';
 
 readFileAsync('./data/stocksList.json')

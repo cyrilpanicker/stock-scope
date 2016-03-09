@@ -15,7 +15,6 @@ app.get('/stockdata/:stock',(request,response) => {
         stock:request.params.stock,
         endDate:new Date()
     }).then(candleData => {
-        candleData.addSMA(8).addSMA(21).addSMA(55);
         response.send(candleData.getCandles());
     },(error) => {
         response.status(500).send(error);

@@ -1,6 +1,7 @@
 {
   "name": "stock-scope",
   "dependencies": {
+    "d3": "^3.5.16",
     "express": "^4.13.4",
     "jquery": "^2.2.1",
     "moment": "^2.11.2",

@@ -3,18 +3,21 @@
 import {assign} from 'underscore';
 
 const average = function(data:number[]){
-	return data.reduce(function(last,current,currentIndex){
-		return (last*(currentIndex) + current)/(currentIndex+1);
-	});
+    const total = data.reduce((last,current) => last + current);
+    const average = total/data.length;
+    // console.log(data.join()+' : '+average);
+    return average;
+	// return data.reduce(function(last,current,currentIndex){
+	// 	return (last*(currentIndex) + current)/(currentIndex+1);
+	// });
 };
 
 export const addSMA = function({data,property,period}){
     
     for (var index = 0; index < data.length; index++) {
         if(index >= period-1){
-            data[index]['ma'+period] = average(
-                data.slice(index+1-period,index+1).map(datum => datum[property])
-            );
+            const slice = data.slice(index+1-period,index+1).map(datum => datum[property]);
+            data[index]['ma'+period] = average(slice);
         }
     }
     
@@ -41,15 +44,23 @@ export const addSMA = function({data,property,period}){
 //     {close:7},
 //     {close:8},
 //     {close:9},
+//     {close:10},
+//     {close:1},
+//     {close:2},
+//     {close:3},
+//     {close:4},
+//     {close:5},
+//     {close:6},
+//     {close:7},
+//     {close:8},
+//     {close:9},
 //     {close:10}
 // ];
 // 
-// var output = addMovingAverage({
+// var output = addSMA({
 //     data:input,
 //     property:'close',
-//     period:4
+//     period:3
 // })
 // 
-// console.log(output);
-// console.log('----------');
 // console.log(input)

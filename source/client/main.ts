@@ -9,20 +9,21 @@ import {Chart} from '../models/Chart';
 
 $(() => {
     $.ajax({
-        url:'/stockdata/GDL',
+        url:'/stockdata/ASTRAL',
         success:(candles:Candle[])=>{
 
             const candleList:CandleList = new CandleList(candles);
 
             let sma8:any[] = candleList.getSMA(8);
             let sma21:any[] = candleList.getSMA(21);
-            const sma55:any[] = candleList.getSMA(55);
+            let sma55:any[] = candleList.getSMA(55);
             
             const dateList = sma55.map(value => value.date);
             
-            candles = candles.filter(candle => dateList.indexOf(candle.date)>-1);
-            sma8 = sma8.filter(node => dateList.indexOf(node.date)>-1);
-            sma21 = sma21.filter(node => dateList.indexOf(node.date)>-1);
+            candles = candles.slice(-180);
+            sma8 = sma8.slice(-180);
+            sma21 = sma21.slice(-180);
+            sma55 = sma55.slice(-180);
             
             console.log(candles);
             
@@ -31,7 +32,7 @@ $(() => {
             const chart = new Chart({
                 svg:d3.select('#chart').append('svg'),
                 width:1280,
-                height:400,
+                height:300,
                 dateArray:candles.map(candle => candle.date),
                 minValue:d3.min(candles.map(candle => candle.low)),
                 maxValue:d3.max(candles.map(candle => candle.high))

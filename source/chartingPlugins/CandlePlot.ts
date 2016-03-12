@@ -29,7 +29,7 @@ export const plotCandles = ({svg,candles,valueScale,dateScale,candleWidth}:Candl
         .attr('x',candle => dateScale(candle.date) - 0.5 * candleWidth)
         .attr('y',candle => valueScale(d3.max([candle.open,candle.close])))
         .attr('width',_ => candleWidth)
-        .attr('height',candle => valueScale(d3.min([candle.open,candle.close])) - valueScale(d3.max([candle.open,candle.close])))
+        .attr('height',candle => ((valueScale(d3.min([candle.open,candle.close])) - valueScale(d3.max([candle.open,candle.close]))) || 0.01))
         .attr('stroke','black')
         .attr('fill',candle => candle.open > candle.close ? 'black' : 'white');
     

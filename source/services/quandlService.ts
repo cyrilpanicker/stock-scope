@@ -4,7 +4,7 @@
 
 import * as request from 'request';
 import * as moment from 'moment';
-import {CandleArray} from '../models/CandleArray';
+import {CandleList} from '../models/CandleList';
 
 const URI = 'https://www.quandl.com/api/v3/datasets/NSE/<STOCK>.json';
 const API_KEY = 'kxeEoL4RejR54Ae4VPPg';
@@ -31,7 +31,7 @@ const transformCandleData = (symbol) => {
 };
 
 export const getCandleData = ({stock,endDate}) => {
-    return new Promise<CandleArray>((resolve,reject) => {
+    return new Promise<CandleList>((resolve,reject) => {
         request({
             uri:URI.replace('<STOCK>',stock),
             qs:{
@@ -54,7 +54,7 @@ export const getCandleData = ({stock,endDate}) => {
                 if(body.dataset.data.some(datum => !datum[6])){
                     reject('zero-volume-candle-found');
                 } else {
-                    resolve(new CandleArray(
+                    resolve(new CandleList(
                         body.dataset.data
                             .map(transformCandleData(body.dataset.dataset_code))
                             .reverse()

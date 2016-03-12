@@ -6,8 +6,5 @@ export interface Candle{
     low:number;
     close:number;
     volume:number;
-    turnover:number;
-    ma8?:number;
-    ma21?:number;
-    ma55?:number;
+    turnover?:number;
 }

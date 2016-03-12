@@ -2,111 +2,48 @@
 
 import * as $ from 'jquery';
 import * as d3 from 'd3';
-import {CandleArray} from '../models/CandleArray';
+import {CandleList} from '../models/CandleList';
 import {Candle} from '../models/Candle';
-import {plotLinearValue} from './chartingPlugins/linearValuePlot';
+import {Chart} from '../models/Chart';
     
 
 $(() => {
     $.ajax({
-        url:'/stockdata/KALPATPOWR',
-        success:(data:any[])=>{
-            const candleArray = new CandleArray(data);
-            candleArray.addSMA(8).addSMA(21).addSMA(55);
-            let candles = candleArray.getCandles();
-            candles = candles.filter(candle => (!!candle.ma8 && !!candle.ma21 && !!candle.ma55));
+        url:'/stockdata/GDL',
+        success:(candles:Candle[])=>{
+
+            const candleList:CandleList = new CandleList(candles);
+
+            let sma8:any[] = candleList.getSMA(8);
+            let sma21:any[] = candleList.getSMA(21);
+            const sma55:any[] = candleList.getSMA(55);
+            
+            const dateList = sma55.map(value => value.date);
+            
+            candles = candles.filter(candle => dateList.indexOf(candle.date)>-1);
+            sma8 = sma8.filter(node => dateList.indexOf(node.date)>-1);
+            sma21 = sma21.filter(node => dateList.indexOf(node.date)>-1);
+            
             console.log(candles);
-            const width = 1280;
-            const height = 300;
-            
-            const priceScale = d3.scale.linear()
-                .domain([d3.min(candles.map(candle => candle.low)),d3.max(candles.map(candle => candle.high))])
-                .range([height,0]);
-
-            const dateScale = d3.scale.ordinal<string,number>()
-                .domain(candles.map(candle => candle.date))
-                .rangePoints([0,width]);
-
-//             const margin = 50;
-//             const candleWidth = 0.5 * (width - 2*margin)/candles.length;
-// 
-//             const priceScale = d3.scale.linear()
-//                 .domain([d3.min(candles.map(candle => candle.low)),d3.max(candles.map(candle => candle.high))])
-//                 .range([height-margin,margin]);
-// 
-//             const dateScale = d3.scale.ordinal<string,number>()
-//                 .domain(candles.map(candle => candle.date))
-//                 .rangePoints([margin,width-margin]);
-//                 
-//             const smaList = [
-//                 {property:'ma8',color:'red'},
-//                 {property:'ma21',color:'blue'},
-//                 {property:'ma55',color:'yellow'}
-//             ];
-            
-            
-            // const pathGenerator = d3.svg.line()
-            //     .interpolate('cardinal');
-            // 
-            // const pathMapper = (sma) => {
-            //     const coOrdinatesArray = candles.map(candle => {
-            //         const coOrdinates:[number,number]=[0,0];
-            //         coOrdinates[0] = dateScale(candle.date);
-            //         coOrdinates[1] = priceScale(candle[sma.property]);
-            //         return coOrdinates;
-            //     });
-            //     return pathGenerator(coOrdinatesArray);
-            // };
             
             $('body').append('<div id="chart"></div>');
             
-            const svg = d3.select('#chart').append('svg')
-                .attr('width',width)
-                .attr('height',height);
-                
-            // const paths = svg.selectAll('path').data(smaList);
-            // paths.exit().remove();
-            // paths.enter().append('path');
-            // paths
-            //     .attr('stroke',sma => sma.color)
-            //     .attr('fill','none')
-            //     .attr('d',pathMapper)
-            plotLinearValue({
-                color:'red',
-                svg:svg,
-                data:candles.map(candle => {
-                    return {
-                        ordinal:candle.date,
-                        value:candle.ma8
-                    };
-                }),
-                valueScale:priceScale,
-                dateScale
+            const chart = new Chart({
+                svg:d3.select('#chart').append('svg'),
+                width:1280,
+                height:400,
+                dateArray:candles.map(candle => candle.date),
+                minValue:d3.min(candles.map(candle => candle.low)),
+                maxValue:d3.max(candles.map(candle => candle.high))
             });
-            plotLinearValue({
-                color:'blue',
-                svg:svg,
-                data:candles.map(candle => {
-                    return {
-                        ordinal:candle.date,
-                        value:candle.ma21
-                    };
-                }),
-                valueScale:priceScale,
-                dateScale
-            });
-            plotLinearValue({
-                color:'yellow',
-                svg:svg,
-                data:candles.map(candle => {
-                    return {
-                        ordinal:candle.date,
-                        value:candle.ma55
-                    };
-                }),
-                valueScale:priceScale,
-                dateScale
-            });
+            
+            chart.plotCandles(candles);
+            
+            chart.plotLine(sma8,'red');
+            chart.plotLine(sma21,'blue');
+            chart.plotLine(sma55,'yellow');
+            
+
         },
         error:(error) => {
             console.log(error);

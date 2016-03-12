@@ -19,17 +19,3 @@ readFileAsync('./data/stocksList.json')
 },error => {
     console.log(error);
 });
-
-// import * as DB from './services/mongoDbService';
-// DB.connect()
-// .then(()=>{
-//     console.log('db connected.');
-//     return Server.start();
-// },()=>{
-//     return Promise.reject('db-error');
-// })
-// .then((port)=>{
-//     console.log('server listening at '+port+'.');
-// },error => {
-//     console.log(error);
-// });

@@ -2,7 +2,7 @@
 
 import * as express from 'express';
 import {getAllIndustries} from './services/localDataService';
-import {getCandleData} from './services/yahooService';
+import {getCandleData} from './services/quandlService';
 
 const PORT = 8000;
 
@@ -15,7 +15,7 @@ app.get('/stockdata/:stock',(request,response) => {
         stock:request.params.stock,
         endDate:new Date()
     }).then(candleData => {
-        response.send(candleData.getCandles());
+        response.send(candleData.toArray());
     },(error) => {
         response.status(500).send(error);
     });

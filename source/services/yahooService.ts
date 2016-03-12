@@ -2,7 +2,7 @@
 
 import * as request from 'request';
 import * as moment from 'moment';
-import {CandleArray} from '../models/CandleArray';
+import {CandleList} from '../models/CandleList';
 
 const uri = 'https://query.yahooapis.com/v1/public/yql';
 const env = 'store://datatables.org/alltableswithkeys';
@@ -38,20 +38,20 @@ export const getCandleData = ({stock,endDate}) => {
         .replace('<END-DATE>',moment(endDate).format('YYYY-MM-DD'))
         .replace('<START-DATE>',moment(endDate).subtract(START_DATE_OFFSET,'days').format('YYYY-MM-DD'));
 
-    return new Promise<CandleArray>((resolve,reject) => {
+    return new Promise<CandleList>((resolve,reject) => {
         request({uri,qs:{env,format,q},json:true},(error, response, body) => {
             if(error){
                 reject(error);
             } else if(!body.query || typeof body.query.count === 'undefined' || body.query.count === null){
                 reject('unexpected-error');
             } else if(body.query.count === 0){
-                resolve(new CandleArray([]));
+                resolve(new CandleList([]));
             } else {
                 const data = body.query.results.quote.filter(datum => !!parseFloat(datum.Volume));
                 if(data.length < CANDLES_TO_FETCH){
                     reject('insufficient-data');
                 } else {
-                    resolve(new CandleArray(
+                    resolve(new CandleList(
                         data.map(datum => transformCandleData(datum)).reverse()
                     ));
                 }

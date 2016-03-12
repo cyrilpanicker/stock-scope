@@ -1,29 +1,27 @@
-/// <reference path="../../../typings/tsd.d.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 import * as d3 from 'd3';
 
-interface LinearValuePlotData{
-    ordinal:string,
+export interface LinePlotData{
+    date:string,
     value:number
 }
 
-interface LinearValuePlotConfig{
+export interface LinePlotConfig{
     svg:d3.Selection<any>;
-    data:LinearValuePlotData[];
+    data:LinePlotData[];
     color:string;
     valueScale:d3.scale.Linear<number,number>;
     dateScale:d3.scale.Ordinal<string,number>;
 }
 
-export const plotLinearValue = (linearValuePlotConfig:LinearValuePlotConfig) => {
-    
-    const {svg,data,color,valueScale,dateScale} = linearValuePlotConfig;
+export const plotLine = ({svg,data,color,valueScale,dateScale}:LinePlotConfig) => {
         
-    const pathGenerator = d3.svg.line().interpolate('cardinal');
+    const pathGenerator = d3.svg.line().interpolate('linear');
     
     const pathMapper = () => {
         const coOrdinatesArray = data.map(datum => {
             const coOrdinates:[number,number]=[0,0];
-            coOrdinates[0] = dateScale(datum.ordinal);
+            coOrdinates[0] = dateScale(datum.date);
             coOrdinates[1] = valueScale(datum.value);
             return coOrdinates;
         });

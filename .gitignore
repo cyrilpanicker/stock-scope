@@ -2,3 +2,4 @@
 /build
 /typings
 /source/.baseDir.ts
+*.tmp.txt

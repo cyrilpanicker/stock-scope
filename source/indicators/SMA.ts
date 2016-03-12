@@ -1,48 +1,46 @@
 /// <reference path="../../typings/tsd.d.ts" />
 
-import {assign} from 'underscore';
-
-const average = (data:number[]) => {
-    const total = data.reduce((last,current) => last + current);
-    return total/data.length;
+const getAverage = (data:number[]) => {
+    return data.reduce((last,current) => last + current)/data.length;
 };
 
-export const addSMA = ({data,property,period}) => {
-    for (let index = 0; index < data.length; index++) {
+export const getSMA = (data:any[],valueProperty:string,period:number) => {
+    let SMA = [];
+    data.forEach((datum,index) => {
         if(index >= period-1){
-            const slice = data.slice(index+1-period,index+1).map(datum => datum[property]);
-            data[index]['ma'+period] = average(slice);
+            const SMANode:any = {};
+            SMANode.date = datum.date;
+            SMANode.value = getAverage(data.slice(index+1-period,index+1).map(datum => datum[valueProperty]))
+            SMA.push(SMANode);
         }
-    }
+    });
+    return SMA;
 }
 
+
 // const input = [
-//     {close:1},
-//     {close:2},
-//     {close:3},
-//     {close:4},
-//     {close:5},
-//     {close:6},
-//     {close:7},
-//     {close:8},
-//     {close:9},
-//     {close:10},
-//     {close:1},
-//     {close:2},
-//     {close:3},
-//     {close:4},
-//     {close:5},
-//     {close:6},
-//     {close:7},
-//     {close:8},
-//     {close:9},
-//     {close:10}
+//     {month:'A',close:1},
+//     {month:'B',close:2},
+//     {month:'C',close:3},
+//     {month:'D',close:4},
+//     {month:'E',close:5},
+//     {month:'F',close:6},
+//     {month:'G',close:7},
+//     {month:'H',close:8},
+//     {month:'I',close:9},
+//     {month:'J',close:10},
+//     {month:'K',close:1},
+//     {month:'L',close:2},
+//     {month:'M',close:3},
+//     {month:'N',close:4},
+//     {month:'O',close:5},
+//     {month:'P',close:6},
+//     {month:'Q',close:7},
+//     {month:'R',close:8},
+//     {month:'S',close:9},
+//     {month:'T',close:10}
 // ];
 // 
-// var output = addSMA({
-//     data:input,
-//     property:'close',
-//     period:3
-// })
+// var smas = getSMA(input,'month','close',3);
 // 
-// console.log(input)
+// console.log(smas)

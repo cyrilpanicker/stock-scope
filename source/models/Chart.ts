@@ -1,5 +1,6 @@
 /// <reference path="../../typings/tsd.d.ts" />
 
+import * as d3 from 'd3';
 import {LinePlotData,plotLine} from '../chartingPlugins/LinePlot';
 import {plotCandles} from '../chartingPlugins/CandlePlot';
 import {Candle} from './Candle';

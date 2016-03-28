@@ -5,6 +5,8 @@ import * as d3 from 'd3';
 import {CandleList} from '../models/CandleList';
 import {Candle} from '../models/Candle';
 import {Chart} from '../models/Chart';
+
+require('./styles.css');
     
 
 $(() => {

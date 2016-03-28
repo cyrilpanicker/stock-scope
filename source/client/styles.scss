@@ -1,0 +1,37 @@
+
+%axis-line{
+    fill: none;
+    stroke: black;
+}
+
+%axis-labels{
+    font-size:10px;
+}
+
+.date-axis{
+    line,path{@extend %axis-line;}
+    text{@extend %axis-labels;}
+}
+
+.price-axis{
+    line,path{@extend %axis-line;}
+    text{@extend %axis-labels;}
+}
+
+// .date-axis line, .date-axis path{
+//     fill: none;
+//     stroke: black;
+// }
+// 
+// .date-axis text{
+//     font-size:10px;
+// }
+// 
+// .price-axis line, .price-axis path{
+//     fill: none;
+//     stroke: black;
+// }
+// 
+// .price-axis text{
+//     font-size:10px;
+// }

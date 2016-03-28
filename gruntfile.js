@@ -21,6 +21,18 @@ module.exports = function(grunt){
             }
         },
         
+        sass:{
+            default:{
+                options:{
+                    sourcemap:'none',
+                    style:'expanded'
+                },
+                files:{
+                    'build/client/styles.css':'source/client/styles.scss'
+                }
+            }
+        },
+        
         webpack:{
             default:{
                 entry:'./build/client/main.js',
@@ -34,14 +46,15 @@ module.exports = function(grunt){
                         filename:'index.html'
                     })
                 ],
-                devtool:'inline-source-map'
-                // module:{
-                //     loaders:[
-                //         {
-                //             test: /\.json$/, loader: 'json-loader'
-                //         }
-                //     ]
-                // },
+                devtool:'inline-source-map',
+                module:{
+                    loaders:[
+                        {
+                            // test: /\.json$/, loader: 'json-loader',
+                            test: /\.css$/, loader: 'style-loader!css-loader'
+                        }
+                    ]
+                }
                 // node:{
                 //     console:'empty',
                 //     fs:'empty',
@@ -62,8 +75,9 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-ts');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-webpack');
+    grunt.loadNpmTasks('grunt-contrib-sass');
     
-    grunt.registerTask('build',['ts']);
+    grunt.registerTask('build',['ts','sass']);
     grunt.registerTask('bundle',['webpack']);
     grunt.registerTask('run',['shell:run']);
     grunt.registerTask('default',['build','bundle','run']);

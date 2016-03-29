@@ -20,8 +20,6 @@ $(() => {
             let sma21:any[] = candleList.getSMA(21);
             let sma55:any[] = candleList.getSMA(55);
             
-            const dateList = sma55.map(value => value.date);
-            
             candles = candles.slice(-180);
             sma8 = sma8.slice(-180);
             sma21 = sma21.slice(-180);
@@ -33,19 +31,19 @@ $(() => {
             
             const chart = new Chart({
                 svg:d3.select('#chart').append('svg'),
-                width:1280,
+                width:1350,
                 height:300,
+                padding:{top:0,right:70,bottom:0,left:0},
                 dateArray:candles.map(candle => candle.date),
                 minValue:d3.min(candles.map(candle => candle.low)),
                 maxValue:d3.max(candles.map(candle => candle.high))
             });
             
+            chart.plotAxes();
             chart.plotCandles(candles);
-            
             chart.plotLine(sma8,'red');
             chart.plotLine(sma21,'blue');
             chart.plotLine(sma55,'yellow');
-            
 
         },
         error:(error) => {

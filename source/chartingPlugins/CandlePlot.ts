@@ -1,6 +1,5 @@
 /// <reference path="../../typings/tsd.d.ts" />
 import * as d3 from 'd3';
-import * as moment from 'moment';
 import {Candle} from '../models/Candle';
 
 export interface CandlePlotConfig{
@@ -33,24 +32,5 @@ export const plotCandles = ({svg,candles,valueScale,dateScale,candleWidth}:Candl
         .attr('height',candle => ((valueScale(d3.min([candle.open,candle.close])) - valueScale(d3.max([candle.open,candle.close]))) || 0.01))
         .attr('stroke','black')
         .attr('fill',candle => candle.open > candle.close ? 'black' : 'white');
-        
-    const dateAxisGenerator =  d3.svg.axis()
-        .scale(dateScale)
-        .tickValues(dateScale.domain().filter((_,index,array) => !(index%5) || index == array.length-1))
-        .tickFormat(dateString => moment(dateString).format('M/D'));
-        
-    const priceAxisGenerator = d3.svg.axis()
-        .scale(valueScale)
-        .orient('right')
-        .ticks(10);
-    
-    svg.append('g')
-        .attr('class','date-axis')
-        .call(dateAxisGenerator);
-
-    svg.append('g')
-        .attr('class','price-axis')
-        .attr('transform','translate('+svg.attr('width')+',0)')
-        .call(priceAxisGenerator);
     
 };

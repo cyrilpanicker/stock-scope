@@ -17,3 +17,8 @@
     line,path{@extend %axis-line;}
     text{@extend %axis-labels;}
 }
+
+.cross-hair{
+    fill: none;
+    stroke: steelblue;
+}

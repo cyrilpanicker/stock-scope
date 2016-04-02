@@ -1,5 +1,5 @@
 import {Candle} from './Candle';
-import {getSMA} from '../indicators/SMA';
+import {getSMA} from '../services/SMA';
 
 export class CandleList{
     private data:Candle[];

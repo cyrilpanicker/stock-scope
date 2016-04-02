@@ -1,10 +1,10 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../../typings/tsd.d.ts" />
 
 import * as d3 from 'd3';
-import {LinePlotData,plotLine} from '../chartingPlugins/LinePlot';
-import {plotCandles} from '../chartingPlugins/CandlePlot';
-import {plotDateAxis,plotValueAxis} from '../chartingPlugins/AxesPlot';
-import {Candle} from './Candle';
+import {LinePlotData,plotLine} from '../services/LinePlot';
+import {plotCandles} from '../services/CandlePlot';
+import {plotDateAxis,plotValueAxis} from '../services/AxesPlot';
+import {Candle} from '../../models/Candle';
 
 interface Padding{
     top:number;

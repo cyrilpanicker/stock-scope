@@ -1,8 +1,8 @@
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 import {setStocksList} from './services/localDataService';
 import {readFileAsync} from './services/promisifiedServices';
-import * as Server from './server';
+import * as Server from './webServer';
 
 readFileAsync('./data/stocksList.json')
 

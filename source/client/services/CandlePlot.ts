@@ -1,6 +1,6 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../../typings/tsd.d.ts" />
 import * as d3 from 'd3';
-import {Candle} from '../models/Candle';
+import {Candle} from '../../models/Candle';
 
 export interface CandlePlotConfig{
     svg:d3.Selection<any>;

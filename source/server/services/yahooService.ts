@@ -1,8 +1,8 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../../typings/tsd.d.ts" />
 
 import * as request from 'request';
 import * as moment from 'moment';
-import {CandleList} from '../models/CandleList';
+import {CandleList} from '../../models/CandleList';
 
 const uri = 'https://query.yahooapis.com/v1/public/yql';
 const env = 'store://datatables.org/alltableswithkeys';

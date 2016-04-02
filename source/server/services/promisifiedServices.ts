@@ -1,4 +1,4 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../../typings/tsd.d.ts" />
 import {readFile} from 'fs';
 
 export const readFileAsync = (file:string) => {

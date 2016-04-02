@@ -1,10 +1,10 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../../typings/tsd.d.ts" />
 
 //3, 5, 8, 13, 21, 34, 55, 89
 
 import * as request from 'request';
 import * as moment from 'moment';
-import {CandleList} from '../models/CandleList';
+import {CandleList} from '../../models/CandleList';
 
 const URI = 'https://www.quandl.com/api/v3/datasets/NSE/<STOCK>.json';
 const API_KEY = 'kxeEoL4RejR54Ae4VPPg';

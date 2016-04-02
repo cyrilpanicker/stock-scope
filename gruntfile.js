@@ -66,7 +66,7 @@ module.exports = function(grunt){
         
         shell:{
             run:{
-                command:'node ./build/app.js'
+                command:'node ./build/server/main.js'
             }
         }
         

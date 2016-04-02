@@ -25,8 +25,6 @@ $(() => {
             sma21 = sma21.slice(-180);
             sma55 = sma55.slice(-180);
             
-            console.log(candles);
-            
             $('body').append('<div id="chart"></div>');
             
             const chart = new Chart({
@@ -39,12 +37,13 @@ $(() => {
                 maxValue:d3.max(candles.map(candle => candle.high))
             });
             
-            chart.plotAxes();
-            chart.plotCandles(candles);
-            chart.plotLine(sma8,'red');
-            chart.plotLine(sma21,'blue');
-            chart.plotLine(sma55,'yellow');
-
+            chart.plotDateAxis('date-axis');
+            chart.plotValueAxis('price-axis',10);
+            chart.plotCandles(candles,'price-chart');
+            chart.plotLine(sma8,'price-sma-8','red');
+            chart.plotLine(sma21,'price-sma-21','blue');
+            chart.plotLine(sma55,'price-sma-55','yellow');
+            chart.plotCrossHair();
         },
         error:(error) => {
             console.log(error);

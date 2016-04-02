@@ -25,15 +25,17 @@ interface ChartConfig{
 
 export class Chart{
 
-    svg:d3.Selection<any>;
-    width:number;
-    height:number;
-    chartWidth:number;
-    chartHeight:number;
-    padding:Padding;
-    dateScale:d3.scale.Ordinal<string,number>;
-    valueScale:d3.scale.Linear<number,number>;
-    crossHair:d3.Selection<any>;
+    private svg:d3.Selection<any>;
+    private width:number;
+    private height:number;
+    private chartWidth:number;
+    private chartHeight:number;
+    private padding:Padding;
+    private dateScale:d3.scale.Ordinal<string,number>;
+    private valueScale:d3.scale.Linear<number,number>;
+    private crossHair:d3.Selection<any>;
+    private mouseMoveHandler:(date:string)=>void;
+    
     static xBuffer = 10;
 
     constructor({svg,width,height,padding,minValue,maxValue,dateArray}:ChartConfig){
@@ -46,46 +48,77 @@ export class Chart{
         this.padding = padding;
         this.valueScale = d3.scale.linear().domain([minValue,maxValue]).range([height-padding.bottom,padding.top]);
         this.dateScale = d3.scale.ordinal<string,number>().domain(dateArray).rangePoints([Chart.xBuffer+padding.left,width-Chart.xBuffer-padding.right]);
-        this.crossHair = svg.append('g');
-        this.crossHair.append('line').attr('class','cross-hair').attr('id','x-cross-hair');
-        this.crossHair.append('line').attr('class','cross-hair').attr('id','y-cross-hair');
-        this.trackMouseMovement(svg);
+        this.trackMouseMove();
     }
     
-
+    onMouseMove(handler:(date:string)=>void){
+        this.mouseMoveHandler = handler;
+    }
     
-    private trackMouseMovement(svg) {
-        const self = this;
-        svg.on('mousemove',function(){
-            const [xFocus,yFocus] = d3.mouse(this);
-            const focusedValue = self.valueScale.invert(yFocus);
-            const focusedDate = self.dateScale.domain()[d3.bisect(self.dateScale.range(),xFocus)];
-            self.crossHair.select('#y-cross-hair')
-                .attr('x1',self.dateScale(focusedDate)).attr('x2',self.dateScale(focusedDate))
-                .attr('y1',0).attr('y2',self.height);
-            self.crossHair.select('#x-cross-hair')
-                .attr('x1',0).attr('x2',self.width)
-                .attr('y1',yFocus).attr('y2',yFocus);
-            console.log(focusedDate+', '+focusedValue);
-        });
-    } 
-    
-    plotLine(data:LinePlotData[],color:string){
+    plotLine(data:LinePlotData[],className:string,color:string){
         const {svg,dateScale,valueScale} = this;
-        plotLine({color,data,dateScale,valueScale,svg});
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        plotLine({element,color,data,dateScale,valueScale});
     }
     
-    plotCandles(candles:Candle[]){
+    plotCandles(candles:Candle[],className:string){
         const {svg,dateScale,valueScale,chartWidth} = this;
         const candleWidth = 0.6 * chartWidth / candles.length;
-        plotCandles({svg,candles,dateScale,valueScale,candleWidth});
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        plotCandles({element,candles,dateScale,valueScale,candleWidth});
     }
     
-    plotAxes(){
+    plotDateAxis(className:string){
+        const {svg,dateScale,valueScale} = this;
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        plotDateAxis({element,dateScale});
+    }
+    
+    plotValueAxis(className:string,ticks:number){
         const {svg,dateScale,valueScale} = this;
         const translate = this.padding.left + this.chartWidth;
-        plotDateAxis({svg,dateScale});
-        plotValueAxis({svg,valueScale,translate});
+        svg.selectAll(className).remove();
+        const element = svg.append('g')
+            .attr('class',className)
+            .attr('transform','translate('+translate+',0)');
+        plotValueAxis({element,valueScale,ticks});
+    }
+    
+    plotCrossHair(){
+        const {svg,dateScale,height,width} = this;
+        svg.selectAll('.cross-hair').remove();
+        this.crossHair = this.svg.append('g').attr('class','cross-hair')
+        this.crossHair.append('line').attr('id','x-cross-hair');
+        this.crossHair.append('line').attr('id','y-cross-hair');
+    }
+    
+    private trackMouseMove(){
+        const {svg,dateScale,width,height} = this;
+        const self = this;
+        svg.on('mousemove',function(){
+            if(self.mouseMoveHandler || self.crossHair){
+                const [x,y] = d3.mouse(this);
+                const date1 = dateScale.domain()[d3.bisect(dateScale.range(),x)];
+                const date2 = dateScale.domain()[d3.bisect(dateScale.range(),x) - 1];
+                const date = (dateScale(date1) - x) < (x - dateScale(date2)) ? date1 : date2;
+                if(date){
+                    if(self.mouseMoveHandler){
+                        self.mouseMoveHandler(date);
+                    }
+                    if(self.crossHair){
+                        self.crossHair.select('#y-cross-hair')
+                            .attr('x1',dateScale(date)).attr('x2',dateScale(date))
+                            .attr('y1',0).attr('y2',height);
+                        self.crossHair.select('#x-cross-hair')
+                            .attr('x1',0).attr('x2',width)
+                            .attr('y1',y).attr('y2',y);
+                    }
+                }
+            }
+        });
     }
     
 }

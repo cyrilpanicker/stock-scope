@@ -2,17 +2,17 @@
 import * as d3 from 'd3';
 import {Candle} from '../../models/Candle';
 
-export interface CandlePlotConfig{
-    svg:d3.Selection<any>;
+interface CandlePlotConfig{
+    element:d3.Selection<any>;
     candles:Candle[];
     valueScale:d3.scale.Linear<number,number>;
     dateScale:d3.scale.Ordinal<string,number>;
     candleWidth:number
 }
 
-export const plotCandles = ({svg,candles,valueScale,dateScale,candleWidth}:CandlePlotConfig) => {
+export const plotCandles = ({element,candles,valueScale,dateScale,candleWidth}:CandlePlotConfig) => {
     
-    const candleStems = svg.selectAll('line.candle-stem').data(candles);
+    const candleStems = element.selectAll('line.candle-stem').data(candles);
     candleStems.exit().remove();
     candleStems.enter().append('line').attr('class','candle-stem');
     candleStems
@@ -22,7 +22,7 @@ export const plotCandles = ({svg,candles,valueScale,dateScale,candleWidth}:Candl
         .attr('y2',candle => valueScale(candle.low))
         .attr('stroke','black');
         
-    const candleBodies = svg.selectAll('rect.candle-body').data(candles);
+    const candleBodies = element.selectAll('rect.candle-body').data(candles);
     candleBodies.exit().remove();
     candleBodies.enter().append('rect').attr('class','candle-body');
     candleBodies

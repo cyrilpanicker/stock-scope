@@ -7,14 +7,14 @@ export interface LinePlotData{
 }
 
 export interface LinePlotConfig{
-    svg:d3.Selection<any>;
+    element:d3.Selection<any>;
     data:LinePlotData[];
     color:string;
     valueScale:d3.scale.Linear<number,number>;
     dateScale:d3.scale.Ordinal<string,number>;
 }
 
-export const plotLine = ({svg,data,color,valueScale,dateScale}:LinePlotConfig) => {
+export const plotLine = ({element,data,color,valueScale,dateScale}:LinePlotConfig) => {
         
     const pathGenerator = d3.svg.line().interpolate('linear');
     
@@ -28,7 +28,7 @@ export const plotLine = ({svg,data,color,valueScale,dateScale}:LinePlotConfig) =
         return pathGenerator(coOrdinatesArray);
     };
     
-    svg.append('path')
+    element.append('path')
         .attr('stroke',color)
         .attr('fill','none')
         .attr('d',pathMapper);

@@ -40,17 +40,11 @@ $(() => {
             chart.plotDateAxis('date-axis');
             chart.plotValueAxis('price-axis',10);
             chart.plotCandles(candles,'price-chart');
-            chart.plotLine(sma8,'price-sma-8','red');
-            chart.plotLine(sma21,'price-sma-21','blue');
-            chart.plotLine(sma55,'price-sma-55','yellow');
+            chart.plotCurve(sma8,'price-sma-8','red');
+            chart.plotCurve(sma21,'price-sma-21','blue');
+            chart.plotCurve(sma55,'price-sma-55','yellow');
             chart.plotCrossHair();
-            const point1 = chart.getPoint(candles[5].date,candles[5].low);
-            const point2 = chart.getPoint(candles[100].date,candles[100].low);
-            const slope = chart.getSlope(point1,point2);
-            console.log(point1);
-            console.log(point2);
-            console.log(slope);
-            
+            chart.plotSupportLines(candles);
         },
         error:(error) => {
             console.log(error);

@@ -1,7 +1,7 @@
 /// <reference path="../../../typings/tsd.d.ts" />
 
 import * as d3 from 'd3';
-import {LinePlotData,plotLine} from '../services/LinePlot';
+import {CurvePlotData,plotCurve} from '../services/CurvePlot';
 import {plotCandles} from '../services/CandlePlot';
 import {plotDateAxis,plotValueAxis} from '../services/AxesPlot';
 import {Candle} from '../../models/Candle';
@@ -68,15 +68,19 @@ export class Chart{
         };
     }
     
-    getSlope(point1:Point,point2:Point){
-        return (point2.y - point1.y)/(point2.x - point1.x);
+    getLine(point1:Point,point2:Point){
+        const slope = (point2.y - point1.y)/(point2.x - point1.x);
+        return {
+            slope,
+            intercept: point1.y - slope*point1.x
+        };
     }
     
-    plotLine(data:LinePlotData[],className:string,color:string){
+    plotCurve(data:CurvePlotData[],className:string,color:string){
         const {svg,dateScale,valueScale} = this;
         svg.selectAll(className).remove();
         const element = svg.append('g').attr('class',className);
-        plotLine({element,color,data,dateScale,valueScale});
+        plotCurve({element,color,data,dateScale,valueScale});
     }
     
     plotCandles(candles:Candle[],className:string){
@@ -110,6 +114,48 @@ export class Chart{
         this.crossHair = this.svg.append('g').attr('class','cross-hair')
         this.crossHair.append('line').attr('id','x-cross-hair');
         this.crossHair.append('line').attr('id','y-cross-hair');
+    }
+    
+    plotSupportLines(candles:Candle[]){
+        for(let i = 0; i<candles.length-1 ; i++){
+            // const i = 2;
+            const point1 = this.getPoint(candles[i].date,candles[i].low);
+            for(let j=i+1; j<candles.length; j++){
+                let point2 = this.getPoint(candles[j].date,candles[j].low);
+                let line = this.getLine(point1,point2);
+                for(let k=i+1;k<=j-1;k++){
+                    let point12 = this.getPoint(candles[k].date,candles[k].low);
+                    let distance = (point12.x*line.slope+line.intercept) - point12.y;
+                    if(distance > -0.001 && distance < 0.001){
+                        let point3;
+                        if(line.slope === 0){
+                            console.log(candles[i].date+', '+candles[k].date+', '+candles[j].date);
+                            point3 = {x:this.width,y:line.intercept};
+                            this.plotLine(point1,point3,'support','black');
+                        } else if (line.slope > 0 ) {
+                            point3 = {x:-line.intercept/line.slope,y:0};
+                            this.plotLine(point1,point3,'up-trend','magenta');
+                        } else {
+                            point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
+                            //this.plotLine(point1,point3,'down-trend','cyan');
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    plotLine(point1:Point,point2:Point,className:string,color:string){
+        this.svg.append('g')
+            .attr('class',className)
+            .append('line')
+                .attr('x1',point1.x)
+                .attr('y1',-point1.y)
+                .attr('x2',point2.x)
+                .attr('y2',-point2.y)
+                .attr('stroke',color)
+                .style('stroke-dasharray',('3,3'))
+                .style('stroke-opacity', 0.9);
     }
     
     private trackMouseMove(){

@@ -1,20 +1,20 @@
 /// <reference path="../../../typings/tsd.d.ts" />
 import * as d3 from 'd3';
 
-export interface LinePlotData{
+export interface CurvePlotData{
     date:string,
     value:number
 }
 
-export interface LinePlotConfig{
+export interface CurvePlotConfig{
     element:d3.Selection<any>;
-    data:LinePlotData[];
+    data:CurvePlotData[];
     color:string;
     valueScale:d3.scale.Linear<number,number>;
     dateScale:d3.scale.Ordinal<string,number>;
 }
 
-export const plotLine = ({element,data,color,valueScale,dateScale}:LinePlotConfig) => {
+export const plotCurve = ({element,data,color,valueScale,dateScale}:CurvePlotConfig) => {
         
     const pathGenerator = d3.svg.line().interpolate('linear');
     

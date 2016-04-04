@@ -23,6 +23,12 @@ interface ChartConfig{
     dateArray:string[];
 }
 
+interface Point{
+    x:number;
+    y:number;
+}
+
+
 export class Chart{
 
     private svg:d3.Selection<any>;
@@ -53,6 +59,17 @@ export class Chart{
     
     onMouseMove(handler:(date:string)=>void){
         this.mouseMoveHandler = handler;
+    }
+    
+    getPoint(date:string,value:number){
+        return {
+            x:this.dateScale(date),
+            y:-this.valueScale(value)
+        };
+    }
+    
+    getSlope(point1:Point,point2:Point){
+        return (point2.y - point1.y)/(point2.x - point1.x);
     }
     
     plotLine(data:LinePlotData[],className:string,color:string){

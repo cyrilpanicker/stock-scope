@@ -44,6 +44,13 @@ $(() => {
             chart.plotLine(sma21,'price-sma-21','blue');
             chart.plotLine(sma55,'price-sma-55','yellow');
             chart.plotCrossHair();
+            const point1 = chart.getPoint(candles[5].date,candles[5].low);
+            const point2 = chart.getPoint(candles[100].date,candles[100].low);
+            const slope = chart.getSlope(point1,point2);
+            console.log(point1);
+            console.log(point2);
+            console.log(slope);
+            
         },
         error:(error) => {
             console.log(error);

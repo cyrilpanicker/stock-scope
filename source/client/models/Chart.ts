@@ -116,9 +116,8 @@ export class Chart{
         this.crossHair.append('line').attr('id','y-cross-hair');
     }
     
-    plotSupportLines(candles:Candle[]){
+    plotResistanceLines(candles:Candle[]){
         for(let i = 0; i<candles.length-1 ; i++){
-            // const i = 2;
             const point1 = this.getPoint(candles[i].date,candles[i].low);
             for(let j=i+1; j<candles.length; j++){
                 let point2 = this.getPoint(candles[j].date,candles[j].low);
@@ -126,7 +125,7 @@ export class Chart{
                 for(let k=i+1;k<=j-1;k++){
                     let point12 = this.getPoint(candles[k].date,candles[k].low);
                     let distance = (point12.x*line.slope+line.intercept) - point12.y;
-                    if(distance > -0.001 && distance < 0.001){
+                    if(distance > -0.0001 && distance < 0.0001){
                         let point3;
                         if(line.slope === 0){
                             console.log(candles[i].date+', '+candles[k].date+', '+candles[j].date);
@@ -134,7 +133,7 @@ export class Chart{
                             this.plotLine(point1,point3,'support','black');
                         } else if (line.slope > 0 ) {
                             point3 = {x:-line.intercept/line.slope,y:0};
-                            this.plotLine(point1,point3,'up-trend','magenta');
+                            this.plotLine(point1,point3,'up-trend','#DCD9CD');
                         } else {
                             point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
                             //this.plotLine(point1,point3,'down-trend','cyan');
@@ -143,6 +142,91 @@ export class Chart{
                 }
             }
         }
+    }
+    
+    plotSupportLines(candles:Candle[]){
+        
+        const lines = [];
+
+        for(let i = 0; i<candles.length-1 ; i++){
+            const point1 = this.getPoint(candles[i].date,candles[i].low);
+            for(let j=i+1; j<candles.length; j++){
+
+                let point3;
+                let point2 = this.getPoint(candles[j].date,candles[j].low);
+                let line = this.getLine(point1,point2);
+                for(let k=i+1;k<=j-1;k++){
+                    let point12 = this.getPoint(candles[k].date,candles[k].low);
+                    let delta = (point12.x*line.slope+line.intercept) - point12.y;
+                    if(delta > -0.00001 && delta < 0.00001){
+                        if(line.slope === 0){
+                            point3 = {x:this.width,y:line.intercept};
+                            lines.push({point1,point12,point3});
+                        } else if (line.slope > 0 ) {
+                            point3 = {x:-line.intercept/line.slope,y:0};
+                            lines.push({point1,point12,point3});
+                        }
+                    }
+                    // if(distance > -0.00001 && distance < 0.00001){
+                    //     let point3;
+                    //     if(line.slope === 0){
+                    //         point3 = {x:this.width,y:line.intercept};
+                    //         this.plotLine(point1,point3,'support','black');
+                    //     } else if (line.slope > 0 ) {
+                    //         point3 = {x:-line.intercept/line.slope,y:0};
+                    //         this.plotLine(point1,point3,'support-trend','#DCD9CD');
+                    //     } else {
+                    //         // point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
+                    //         // this.plotLine(point1,point3,'down-trend','#DCD9CD');
+                    //     }
+                    // }
+                }
+                
+                point2 = this.getPoint(candles[j].date,candles[j].high);
+                line = this.getLine(point1,point2);
+                for(let k=i+1;k<=j-1;k++){
+                    let point12 = this.getPoint(candles[k].date,candles[k].low);
+                    let distance = (point12.x*line.slope+line.intercept) - point12.y;
+                    if(distance > -0.00001 && distance < 0.00001){
+                        if(line.slope === 0){
+                            point3 = {x:this.width,y:line.intercept};
+                            lines.push({point1,point12,point3});
+                        } else if (line.slope > 0 ) {
+                            point3 = {x:-line.intercept/line.slope,y:0};
+                            lines.push({point1,point12,point3});
+                        }
+                    }
+                }
+
+
+            }
+        }
+        
+        for(let i = 0; i<lines.length ; i++){
+            let priority;
+            let color;
+            var {point1,point12,point3} = lines[i];
+            if(point1.y === point3.y){
+                priority = 3;
+            } else {
+                priority = lines.filter(function(line){
+                    return line.point1.x === point1.x &&
+                    line.point1.y === point1.y &&
+                    line.point3.x === point3.x &&
+                    line.point3.y === point3.y;
+                }).length;
+            }
+            lines[i].priority = priority;
+        }
+        // lines.filter(line => line.priority===1).forEach(line => {
+        //     const {point1,point3} = line;
+        //     this.plotLine(point1,point3,'support','#DCD9CD');
+        // });
+        lines.filter(line => line.priority!==1).forEach(line => {
+            const {point1,point3} = line;
+            this.plotLine(point1,point3,'support','black');
+            console.log(line);
+        });
     }
     
     plotLine(point1:Point,point2:Point,className:string,color:string){

@@ -11,7 +11,7 @@ require('./styles.css');
 
 $(() => {
     $.ajax({
-        url:'/stockdata/ASTRAL',
+        url:'/stockdata/TITAN',
         success:(candles:Candle[])=>{
 
             const candleList:CandleList = new CandleList(candles);
@@ -39,12 +39,13 @@ $(() => {
             
             chart.plotDateAxis('date-axis');
             chart.plotValueAxis('price-axis',10);
+            chart.plotSupportLines(candles);
             chart.plotCandles(candles,'price-chart');
             chart.plotCurve(sma8,'price-sma-8','red');
             chart.plotCurve(sma21,'price-sma-21','blue');
             chart.plotCurve(sma55,'price-sma-55','yellow');
+            
             chart.plotCrossHair();
-            chart.plotSupportLines(candles);
         },
         error:(error) => {
             console.log(error);

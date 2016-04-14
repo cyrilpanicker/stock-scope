@@ -1,5 +1,6 @@
 import {Candle} from './Candle';
 import {getSMA} from '../services/SMA';
+import {getPivots} from '../services/Pivots';
 
 export class CandleList{
     private data:Candle[];
@@ -11,5 +12,8 @@ export class CandleList{
     }
     getSMA(period:number,valueProperty:string='close'){
         return getSMA(this.data,valueProperty,period);
+    }
+    getPivots(){
+        return getPivots(this.data);
     }
 }

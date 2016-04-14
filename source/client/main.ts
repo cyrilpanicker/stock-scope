@@ -11,7 +11,7 @@ require('./styles.css');
 
 $(() => {
     $.ajax({
-        url:'/stockdata/TITAN',
+        url:'/stockdata/ASTRAL',
         success:(candles:Candle[])=>{
 
             const candleList:CandleList = new CandleList(candles);
@@ -37,13 +37,26 @@ $(() => {
                 maxValue:d3.max(candles.map(candle => candle.high))
             });
             
+            chart.plotPivots(new CandleList(candles).getPivots().highs,'pivot-highs','red','high');
+            chart.plotPivots(new CandleList(candles).getPivots().lows,'pivot-lows','blue','low');
+            
             chart.plotDateAxis('date-axis');
             chart.plotValueAxis('price-axis',10);
-            chart.plotSupportLines(candles);
+            // chart.plotSupportLines(candles);
             chart.plotCandles(candles,'price-chart');
-            chart.plotCurve(sma8,'price-sma-8','red');
-            chart.plotCurve(sma21,'price-sma-21','blue');
-            chart.plotCurve(sma55,'price-sma-55','yellow');
+            // chart.plotCurve(candles.map(candle => {return {
+            //     date:candle.date,
+            //     value:candle.low
+            // }}),'price-chart','yellow');
+            // chart.plotCurve(candles.map(candle => {return {
+            //     date:candle.date,
+            //     value:candle.high
+            // }}),'price-chart','steelblue');
+            // chart.plotCurve(sma8,'price-sma-8','red');
+            // chart.plotCurve(sma21,'price-sma-21','blue');
+            // chart.plotCurve(sma55,'price-sma-55','yellow');
+            
+            
             
             chart.plotCrossHair();
         },

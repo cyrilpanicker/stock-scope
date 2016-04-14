@@ -91,6 +91,22 @@ export class Chart{
         plotCandles({element,candles,dateScale,valueScale,candleWidth});
     }
     
+    plotPivots(candles:Candle[],className:string,color:string,property:string){
+        const {svg,dateScale,valueScale,chartWidth} = this;
+        const candleWidth = 4.266666666666667;
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        const lines = element.selectAll('line').data(candles);
+        lines.enter().append('line');
+        lines
+            .attr('y1',datum => valueScale(datum[property]))
+            .attr('y2',datum => valueScale(datum[property]))
+            .attr('x1',datum => dateScale(datum.date)-2.5*candleWidth)
+            .attr('x2',datum => dateScale(datum.date)+2.5*candleWidth)
+            .attr('stroke',color)
+            .style('stroke-dasharray',('3,3'));
+    }
+    
     plotDateAxis(className:string){
         const {svg,dateScale,valueScale} = this;
         svg.selectAll(className).remove();

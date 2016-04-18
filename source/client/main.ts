@@ -8,10 +8,11 @@ import {Chart} from './models/Chart';
 
 require('./styles.css');
     
+const stock = window.location.hash ? window.location.hash.substring(1):'INFY';
 
 $(() => {
     $.ajax({
-        url:'/stockdata/ASTRAL',
+        url:'/stockdata/'+stock,
         success:(candles:Candle[])=>{
 
             const candleList:CandleList = new CandleList(candles);
@@ -37,12 +38,12 @@ $(() => {
                 maxValue:d3.max(candles.map(candle => candle.high))
             });
             
-            chart.plotPivots(new CandleList(candles).getPivots().highs,'pivot-highs','red','high');
             chart.plotPivots(new CandleList(candles).getPivots().lows,'pivot-lows','blue','low');
+            chart.plotPivots(new CandleList(candles).getPivots().highs,'pivot-highs','red','high');
             
             chart.plotDateAxis('date-axis');
             chart.plotValueAxis('price-axis',10);
-            // chart.plotSupportLines(candles);
+            chart.plotSupportLines(candles);
             chart.plotCandles(candles,'price-chart');
             // chart.plotCurve(candles.map(candle => {return {
             //     date:candle.date,

@@ -32,7 +32,7 @@ $(() => {
                 svg:d3.select('#chart').append('svg'),
                 width:1350,
                 height:300,
-                padding:{top:0,right:70,bottom:0,left:0},
+                padding:{top:50,right:70,bottom:0,left:0},
                 dateArray:candles.map(candle => candle.date),
                 minValue:d3.min(candles.map(candle => candle.low)),
                 maxValue:d3.max(candles.map(candle => candle.high))
@@ -45,6 +45,9 @@ $(() => {
             chart.plotValueAxis('price-axis',10);
             // chart.plotSupportLines(candles);
             chart.plotCandles(candles,'price-chart');
+            chart.onMouseMove(date=>{
+                console.log(date);
+            });
             // chart.plotCurve(candles.map(candle => {return {
             //     date:candle.date,
             //     value:candle.low

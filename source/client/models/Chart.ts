@@ -53,7 +53,7 @@ export class Chart{
         this.chartWidth = width - padding.left - padding.right;
         this.chartHeight = height - padding.top - padding.bottom;
         this.padding = padding;
-        this.valueScale = d3.scale.linear().domain([minValue,maxValue]).range([height-padding.bottom,padding.top]);
+        this.valueScale = d3.scale.linear().domain([minValue,maxValue]).range([height-padding.bottom,padding.top+10]);
         this.dateScale = d3.scale.ordinal<string,number>().domain(dateArray).rangePoints([Chart.xBuffer+padding.left,width-Chart.xBuffer-padding.right]);
         this.trackMouseMove();
     }
@@ -109,14 +109,14 @@ export class Chart{
     }
     
     plotDateAxis(className:string){
-        const {svg,dateScale,valueScale} = this;
+        const {svg,dateScale} = this;
         svg.selectAll(className).remove();
         const element = svg.append('g').attr('class',className);
         plotDateAxis({element,dateScale});
     }
     
     plotValueAxis(className:string,ticks:number){
-        const {svg,dateScale,valueScale} = this;
+        const {svg,valueScale} = this;
         const translate = this.padding.left + this.chartWidth;
         svg.selectAll(className).remove();
         const element = svg.append('g')
@@ -289,7 +289,7 @@ export class Chart{
                             .text(Math.round(value*100)/100);
                         self.crossHair.select('.x-value')
                             .attr('x',x)
-                            .attr('y',padding.top+25)
+                            .attr('y',padding.top)
                             .attr('font-size',10)
                             .text(moment(date).format('M/D'));
                     }

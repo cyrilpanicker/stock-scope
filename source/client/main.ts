@@ -46,12 +46,12 @@ $(() => {
                     height:300,
                     minValue:d3.min(candles.map(candle => candle.low)),
                     maxValue:d3.max(candles.map(candle => candle.high)),
-                    padding:{top:10,bottom:0}
+                    padding:{top:30,bottom:0}
                 },{
                     height:300,
                     minValue:d3.min(candles.map(candle => candle.low)),
                     maxValue:d3.max(candles.map(candle => candle.high)),
-                    padding:{top:10,bottom:0}
+                    padding:{top:30,bottom:0}
                 }]
             });
 
@@ -67,6 +67,18 @@ $(() => {
             chart.plotPivots(pivots.lows,'pivot-low','red','low',candleWidth,1);
             chart.plotPivots(pivots.highs,'pivot-high','blue','high',candleWidth,1);
             chart.plotCandles(candles,'price-chart',1);
+            
+            chart.plotCrossHair();
+            
+            chart.onMouseMove(date => {
+                const candle = candles.filter(candle=>candle.date==date)[0];
+                const ohlcText = 'OPEN : '+candle.open+
+                    ',       HIGH : '+candle.high+
+                    ',       LOW : '+candle.low+
+                    ',       CLOSE : '+candle.close;
+                chart.plotInfo(ohlcText,'date-info',0);
+                chart.plotInfo('VOLUME:'+candle.volume,'date-info1',1);
+            });
 
         },
         error:(error) => {

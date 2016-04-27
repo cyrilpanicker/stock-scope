@@ -73,12 +73,44 @@ export class Chart{
         }
         this.dateScale = d3.scale.ordinal<string,number>().domain(dateArray)
             .rangePoints([padding.left,width-padding.right]);
-            
-        this.plotCrossHair();
+
         this.trackMouseMovement();
     }
     
-    private plotCrossHair(){
+    onMouseMove(handler:(date:string)=>void){
+        this.mouseMoveHandler = handler;
+    }
+    
+    private trackMouseMovement(){
+        const {svg,dateScale,valueScales,width,height,padding,slabs} = this;
+        const self = this;
+        svg.on('mousemove',function(){
+            if(self.mouseMoveHandler || self.crossHair){
+                const [x,y] = d3.mouse(this);
+                const date1 = dateScale.domain()[d3.bisect(dateScale.range(),x)];
+                const date2 = dateScale.domain()[d3.bisect(dateScale.range(),x) - 1];
+                const date = (dateScale(date1) - x) < (x - dateScale(date2)) ? date1 : date2;
+                if(date){
+                    if(self.mouseMoveHandler){
+                        self.mouseMoveHandler(date);
+                    }
+                    if(self.crossHair){
+                        const valueScale = valueScales.filter(scale => {
+                            const [max,min] = scale.range();
+                            return max >= y && y >= min;
+                        })[0];
+                        let value = valueScale ? Math.round(valueScale.invert(y)*100)/100  : '';
+                        self.crossHair.select('.y-cross-hair').attr('x1',dateScale(date)).attr('x2',dateScale(date));
+                        self.crossHair.select('.x-cross-hair').attr('y1',y).attr('y2',y);
+                        self.crossHair.select('.y-value').attr('y',y).text(value);
+                        self.crossHair.select('.x-value').attr('x',x).text(moment(date).format('M/D'));
+                    }
+                }
+            }
+        });
+    }
+    
+    plotCrossHair(){
         const {svg,dateScale,height,width,padding,slabs} = this;
         svg.selectAll('.cross-hair').remove();
         this.crossHair = this.svg.append('g').attr('class','cross-hair')
@@ -98,30 +130,24 @@ export class Chart{
             .attr('font-size',10);
     }
     
-    private trackMouseMovement(){
-        const {svg,dateScale,valueScales,width,height,padding,slabs} = this;
-        const valueScale = valueScales[0];
-        const self = this;
-        svg.on('mousemove',function(){
-            if(self.mouseMoveHandler || self.crossHair){
-                const [x,y] = d3.mouse(this);
-                const date1 = dateScale.domain()[d3.bisect(dateScale.range(),x)];
-                const date2 = dateScale.domain()[d3.bisect(dateScale.range(),x) - 1];
-                const date = (dateScale(date1) - x) < (x - dateScale(date2)) ? date1 : date2;
-                const value = valueScale.invert(y);
-                if(date){
-                    if(self.mouseMoveHandler){
-                        self.mouseMoveHandler(date);
-                    }
-                    if(self.crossHair){
-                        self.crossHair.select('.y-cross-hair').attr('x1',dateScale(date)).attr('x2',dateScale(date));
-                        self.crossHair.select('.x-cross-hair').attr('y1',y).attr('y2',y);
-                        self.crossHair.select('.y-value').attr('y',y).text(Math.round(value*100)/100);
-                        self.crossHair.select('.x-value').attr('x',x).text(moment(date).format('M/D'));
-                    }
-                }
-            }
-        });
+    plotInfo(text:string,className:string,slabIndex:number){
+        const {svg,width,padding,slabs} = this;
+        let textElement;
+        const offset = d3.sum(
+            slabs
+                .filter((slab,index)=>index<slabIndex)
+                .map(slab => slab.height)
+        );
+        if(svg.select('.'+className).empty()){
+            textElement = svg.append('g').attr('class',className).append('text')
+                .attr('font-size',10)
+                .attr('x',width-padding.right)
+                .attr('y',offset+slabs[slabIndex].padding.top)
+                .attr('text-anchor','end');
+        } else{
+            textElement = svg.select('.'+className+' text');
+        }
+        textElement.text(text);
     }
     
     plotDateAxis(className:string){
@@ -223,9 +249,7 @@ export class Chart{
             .style('stroke-dasharray',('3,3'));
     }
     
-    // onMouseMove(handler:(date:string)=>void){
-    //     this.mouseMoveHandler = handler;
-    // }
+
     
     // getPoint(date:string,value:number,slab:number){
     //     return {

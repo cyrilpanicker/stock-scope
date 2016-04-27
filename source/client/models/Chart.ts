@@ -30,7 +30,7 @@ interface ChartConfig{
     dateArray:string[];
 }
 
-export interface CurvePlotData{
+export interface ValuePlotData{
     date:string,
     value:number
 }
@@ -161,9 +161,9 @@ export class Chart{
         dateAxis(element);
     }
     
-    plotValueAxis(className:string,ticks:number,slab:number){
+    plotValueAxis(className:string,ticks:number,slabIndex:number){
         const {svg,valueScales} = this;
-        const valueScale = valueScales[slab];
+        const valueScale = valueScales[slabIndex];
         const translate = this.padding.left + this.chartWidth + 10;
         svg.selectAll(className).remove();
         const element = svg.append('g')
@@ -176,10 +176,10 @@ export class Chart{
         valueAxis(element);
     }
     
-    plotCandles(candles:Candle[],className:string,slab:number){
+    plotCandles(candles:Candle[],className:string,slabIndex:number){
 
         const {svg,dateScale,valueScales,chartWidth} = this;
-        const valueScale = valueScales[slab];
+        const valueScale = valueScales[slabIndex];
         const candleWidth = 0.6 * chartWidth / candles.length;
         svg.selectAll(className).remove();
         const element = svg.append('g').attr('class',className);
@@ -207,10 +207,10 @@ export class Chart{
 
     }
     
-    plotCurve(data:CurvePlotData[],className:string,color:string,slab:number){
+    plotCurve(data:ValuePlotData[],className:string,color:string,slabIndex:number){
 
         const {svg,dateScale,valueScales} = this;
-        const valueScale = valueScales[slab];
+        const valueScale = valueScales[slabIndex];
         svg.selectAll(className).remove();
         const element = svg.append('g').attr('class',className);
         
@@ -233,9 +233,36 @@ export class Chart{
 
     }
     
-    plotPivots(candles:Candle[],className:string,color:string,property:string,candleWidth:number,slab:number){
+    plotBars(bars:ValuePlotData[],className:string,slabIndex:number){
+        const {svg,chartWidth,dateScale,valueScales,slabs} = this;
+        const valueScale = valueScales[slabIndex];
+        const barWidth = 0.6 * chartWidth / bars.length;
+        let slabBase = 0;
+        for(var i=0;i<=slabIndex;i++){slabBase += slabs[i].height;}
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        const barSet = element.selectAll('.bar').data(bars);
+        const min = d3.min(bars.map(bar=>bar.value));
+        const max = d3.max(bars.map(bar=>bar.value));
+        const delta = (max-min)/3;
+        const oneThird = min + delta;
+        const twoThirds = oneThird + delta;
+        const colorScale = d3.scale.linear<string>()
+            .domain([min,oneThird,twoThirds,max])
+            .range(['yellow','orange','red','brown']);
+        barSet.enter().append('rect').attr('class','bar');
+        barSet
+            .attr('x',datum => dateScale(datum.date)-0.5*barWidth)
+            .attr('y',datum => valueScale(datum.value))
+            .attr('width',barWidth)
+            .attr('height',datum => slabBase - slabs[slabIndex].padding.bottom - valueScale(datum.value))
+            .attr('stroke',datum=>colorScale(datum.value))
+            .attr('fill',datum=>colorScale(datum.value));
+    }
+    
+    plotPivots(candles:Candle[],className:string,color:string,property:string,candleWidth:number,slabIndex:number){
         const {svg,dateScale,valueScales,chartWidth} = this;
-        const valueScale = valueScales[slab];
+        const valueScale = valueScales[slabIndex];
         svg.selectAll(className).remove();
         const element = svg.append('g').attr('class',className);
         const lines = element.selectAll('line').data(candles);

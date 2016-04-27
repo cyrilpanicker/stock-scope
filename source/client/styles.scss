@@ -8,16 +8,14 @@
     font-size:10px;
 }
 
-.date-axis{
+%axis{
     line,path{@extend %axis-line;}
     text{@extend %axis-labels;}
     opacity: 0.3;
 }
 
-.price-axis{
-    line,path{@extend %axis-line;}
-    text{@extend %axis-labels;}
-    opacity: 0.3;
+.date-axis,.price-axis,.volume-axis{
+    @extend %axis;
 }
 
 .cross-hair{

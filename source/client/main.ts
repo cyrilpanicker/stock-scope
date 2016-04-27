@@ -48,10 +48,10 @@ $(() => {
                     maxValue:d3.max(candles.map(candle => candle.high)),
                     padding:{top:30,bottom:0}
                 },{
-                    height:300,
-                    minValue:d3.min(candles.map(candle => candle.low)),
-                    maxValue:d3.max(candles.map(candle => candle.high)),
-                    padding:{top:30,bottom:0}
+                    height:100,
+                    minValue:d3.min(candles.map(candle => candle.volume)),
+                    maxValue:d3.max(candles.map(candle => candle.volume)),
+                    padding:{top:10,bottom:0}
                 }]
             });
 
@@ -63,10 +63,10 @@ $(() => {
             chart.plotCurve(sma55,'sma8','yellow',0);
             chart.plotCandles(candles,'price-chart',0);
             
-            chart.plotValueAxis('price-axis',10,1);
-            chart.plotPivots(pivots.lows,'pivot-low','red','low',candleWidth,1);
-            chart.plotPivots(pivots.highs,'pivot-high','blue','high',candleWidth,1);
-            chart.plotCandles(candles,'price-chart',1);
+            chart.plotValueAxis('volume-axis',5,1);
+            chart.plotBars(candles.map(candle=>{
+                return {date:candle.date,value:candle.volume};
+            }),'volume-chart',1)
             
             chart.plotCrossHair();
             
@@ -76,8 +76,8 @@ $(() => {
                     ',       HIGH : '+candle.high+
                     ',       LOW : '+candle.low+
                     ',       CLOSE : '+candle.close;
-                chart.plotInfo(ohlcText,'date-info',0);
-                chart.plotInfo('VOLUME:'+candle.volume,'date-info1',1);
+                chart.plotInfo(ohlcText,'ohlc-info',0);
+                chart.plotInfo('VOLUME:'+candle.volume,'volume-info',1);
             });
 
         },

@@ -89,9 +89,11 @@ export class Chart{
             .attr('class','y-cross-hair')
             .attr('y1',0).attr('y2',height);
         this.crossHair.append('text').attr('class','x-value')
-            .attr('y',slabs[0].padding.top+15)
+            .attr('stroke','black')
+            .attr('y',slabs[0].padding.top+5)
             .attr('font-size',10);
         this.crossHair.append('text').attr('class','y-value')
+            .attr('stroke','black')
             .attr('x',width-padding.right+20)
             .attr('font-size',10);
     }

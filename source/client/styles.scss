@@ -11,11 +11,13 @@
 .date-axis{
     line,path{@extend %axis-line;}
     text{@extend %axis-labels;}
+    opacity: 0.3;
 }
 
 .price-axis{
     line,path{@extend %axis-line;}
     text{@extend %axis-labels;}
+    opacity: 0.3;
 }
 
 .cross-hair{

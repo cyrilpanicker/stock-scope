@@ -56,6 +56,7 @@ $(() => {
             });
 
             chart.plotDateAxis('date-axis');
+            
             chart.plotValueAxis('price-axis',10,0);
             chart.plotCurve(sma8,'sma8','red',0);
             chart.plotCurve(sma21,'sma8','blue',0);

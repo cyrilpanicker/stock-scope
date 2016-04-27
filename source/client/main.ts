@@ -43,7 +43,7 @@ $(() => {
             
             chart.plotDateAxis('date-axis');
             chart.plotValueAxis('price-axis',10);
-            chart.plotSupportLines(candles);
+            // chart.plotSupportLines(candles);
             chart.plotCandles(candles,'price-chart');
             // chart.plotCurve(candles.map(candle => {return {
             //     date:candle.date,

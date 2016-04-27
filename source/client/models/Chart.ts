@@ -5,6 +5,7 @@ import {CurvePlotData,plotCurve} from '../services/CurvePlot';
 import {plotCandles} from '../services/CandlePlot';
 import {plotDateAxis,plotValueAxis} from '../services/AxesPlot';
 import {Candle} from '../../models/Candle';
+import * as moment from 'moment';
 
 interface Padding{
     top:number;
@@ -130,6 +131,8 @@ export class Chart{
         this.crossHair = this.svg.append('g').attr('class','cross-hair')
         this.crossHair.append('line').attr('id','x-cross-hair');
         this.crossHair.append('line').attr('id','y-cross-hair');
+        this.crossHair.append('text').attr('class','x-value');
+        this.crossHair.append('text').attr('class','y-value');
     }
     
     plotResistanceLines(candles:Candle[]){
@@ -259,7 +262,7 @@ export class Chart{
     }
     
     private trackMouseMove(){
-        const {svg,dateScale,width,height} = this;
+        const {svg,dateScale,valueScale,width,height,padding} = this;
         const self = this;
         svg.on('mousemove',function(){
             if(self.mouseMoveHandler || self.crossHair){
@@ -267,6 +270,7 @@ export class Chart{
                 const date1 = dateScale.domain()[d3.bisect(dateScale.range(),x)];
                 const date2 = dateScale.domain()[d3.bisect(dateScale.range(),x) - 1];
                 const date = (dateScale(date1) - x) < (x - dateScale(date2)) ? date1 : date2;
+                const value = valueScale.invert(y);
                 if(date){
                     if(self.mouseMoveHandler){
                         self.mouseMoveHandler(date);
@@ -278,6 +282,16 @@ export class Chart{
                         self.crossHair.select('#x-cross-hair')
                             .attr('x1',0).attr('x2',width)
                             .attr('y1',y).attr('y2',y);
+                        self.crossHair.select('.y-value')
+                            .attr('x',width-padding.right+30)
+                            .attr('y',y)
+                            .attr('font-size',10)
+                            .text(Math.round(value*100)/100);
+                        self.crossHair.select('.x-value')
+                            .attr('x',x)
+                            .attr('y',padding.top+25)
+                            .attr('font-size',10)
+                            .text(moment(date).format('M/D'));
                     }
                 }
             }

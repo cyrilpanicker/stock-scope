@@ -25,44 +25,48 @@ $(() => {
             sma8 = sma8.slice(-180);
             sma21 = sma21.slice(-180);
             sma55 = sma55.slice(-180);
+            const pivots = new CandleList(candles).getPivots();
             
+            const width = 1333;
+            const height = 700;
+            const padding = {left:10,right:60};
+            const chartWidth = width - padding.left - padding.right;
+            const candleWidth = 0.6 * chartWidth / candles.length;
+            
+
             $('body').append('<div id="chart"></div>');
-            
+
             const chart = new Chart({
                 svg:d3.select('#chart').append('svg'),
-                width:1350,
-                height:300,
-                padding:{top:50,right:70,bottom:0,left:0},
+                width:width,
+                height:height,
+                padding:padding,
                 dateArray:candles.map(candle => candle.date),
-                minValue:d3.min(candles.map(candle => candle.low)),
-                maxValue:d3.max(candles.map(candle => candle.high))
+                slabs:[{
+                    height:300,
+                    minValue:d3.min(candles.map(candle => candle.low)),
+                    maxValue:d3.max(candles.map(candle => candle.high)),
+                    padding:{top:10,bottom:0}
+                },{
+                    height:300,
+                    minValue:d3.min(candles.map(candle => candle.low)),
+                    maxValue:d3.max(candles.map(candle => candle.high)),
+                    padding:{top:10,bottom:0}
+                }]
             });
-            
-            chart.plotPivots(new CandleList(candles).getPivots().lows,'pivot-lows','blue','low');
-            chart.plotPivots(new CandleList(candles).getPivots().highs,'pivot-highs','red','high');
-            
+
             chart.plotDateAxis('date-axis');
-            chart.plotValueAxis('price-axis',10);
-            // chart.plotSupportLines(candles);
-            chart.plotCandles(candles,'price-chart');
-            chart.onMouseMove(date=>{
-                console.log(date);
-            });
-            // chart.plotCurve(candles.map(candle => {return {
-            //     date:candle.date,
-            //     value:candle.low
-            // }}),'price-chart','yellow');
-            // chart.plotCurve(candles.map(candle => {return {
-            //     date:candle.date,
-            //     value:candle.high
-            // }}),'price-chart','steelblue');
-            // chart.plotCurve(sma8,'price-sma-8','red');
-            // chart.plotCurve(sma21,'price-sma-21','blue');
-            // chart.plotCurve(sma55,'price-sma-55','yellow');
+            chart.plotValueAxis('price-axis',10,0);
+            chart.plotCurve(sma8,'sma8','red',0);
+            chart.plotCurve(sma21,'sma8','blue',0);
+            chart.plotCurve(sma55,'sma8','yellow',0);
+            chart.plotCandles(candles,'price-chart',0);
             
-            
-            
-            chart.plotCrossHair();
+            chart.plotValueAxis('price-axis',10,1);
+            chart.plotPivots(pivots.lows,'pivot-low','red','low',candleWidth,1);
+            chart.plotPivots(pivots.highs,'pivot-high','blue','high',candleWidth,1);
+            chart.plotCandles(candles,'price-chart',1);
+
         },
         error:(error) => {
             console.log(error);

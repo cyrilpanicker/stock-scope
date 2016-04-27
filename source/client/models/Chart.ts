@@ -1,33 +1,44 @@
 /// <reference path="../../../typings/tsd.d.ts" />
 
 import * as d3 from 'd3';
-import {CurvePlotData,plotCurve} from '../services/CurvePlot';
-import {plotCandles} from '../services/CandlePlot';
-import {plotDateAxis,plotValueAxis} from '../services/AxesPlot';
 import {Candle} from '../../models/Candle';
 import * as moment from 'moment';
 
-interface Padding{
-    top:number;
+interface ChartPadding{
     right:number;
-    bottom:number;
     left:number;
+}
+
+interface SlabPadding{
+    top:number;
+    bottom:number;
+}
+
+interface Slab{
+    height:number;
+    minValue:number;
+    maxValue:number;
+    padding:SlabPadding;
 }
 
 interface ChartConfig{
     svg:d3.Selection<any>;
     width:number;
     height:number;
-    padding:Padding;
-    minValue:number;
-    maxValue:number;
+    padding:ChartPadding;
+    slabs:Slab[];
     dateArray:string[];
 }
 
-interface Point{
-    x:number;
-    y:number;
+export interface CurvePlotData{
+    date:string,
+    value:number
 }
+
+// interface Point{
+//     x:number;
+//     y:number;
+// }
 
 
 export class Chart{
@@ -36,233 +47,58 @@ export class Chart{
     private width:number;
     private height:number;
     private chartWidth:number;
-    private chartHeight:number;
-    private padding:Padding;
+    private padding:ChartPadding;
     private dateScale:d3.scale.Ordinal<string,number>;
-    private valueScale:d3.scale.Linear<number,number>;
+    private valueScales:d3.scale.Linear<number,number>[];
+    private slabs:Slab[];
     private crossHair:d3.Selection<any>;
     private mouseMoveHandler:(date:string)=>void;
-    
-    static xBuffer = 10;
 
-    constructor({svg,width,height,padding,minValue,maxValue,dateArray}:ChartConfig){
+    constructor({svg,width,height,padding,slabs,dateArray}:ChartConfig){
         this.svg = svg;
         this.width = width;
         this.height = height;
         this.svg.attr('width',width).attr('height',height);
         this.chartWidth = width - padding.left - padding.right;
-        this.chartHeight = height - padding.top - padding.bottom;
         this.padding = padding;
-        this.valueScale = d3.scale.linear().domain([minValue,maxValue]).range([height-padding.bottom,padding.top+10]);
-        this.dateScale = d3.scale.ordinal<string,number>().domain(dateArray).rangePoints([Chart.xBuffer+padding.left,width-Chart.xBuffer-padding.right]);
-        this.trackMouseMove();
+        this.valueScales = [];
+        this.slabs = slabs;
+        var slabBase = 0;
+        for(var i=0;i<slabs.length;i++){
+            slabBase += slabs[i].height;
+            this.valueScales[i] = d3.scale.linear()
+                .domain([slabs[i].minValue, slabs[i].maxValue])
+                .range([slabBase - slabs[i].padding.bottom, slabBase - slabs[i].height + slabs[i].padding.top]);
+            
+        }
+        this.dateScale = d3.scale.ordinal<string,number>().domain(dateArray)
+            .rangePoints([padding.left,width-padding.right]);
+            
+        this.plotCrossHair();
+        this.trackMouseMovement();
     }
     
-    onMouseMove(handler:(date:string)=>void){
-        this.mouseMoveHandler = handler;
-    }
-    
-    getPoint(date:string,value:number){
-        return {
-            x:this.dateScale(date),
-            y:-this.valueScale(value)
-        };
-    }
-    
-    getLine(point1:Point,point2:Point){
-        const slope = (point2.y - point1.y)/(point2.x - point1.x);
-        return {
-            slope,
-            intercept: point1.y - slope*point1.x
-        };
-    }
-    
-    plotCurve(data:CurvePlotData[],className:string,color:string){
-        const {svg,dateScale,valueScale} = this;
-        svg.selectAll(className).remove();
-        const element = svg.append('g').attr('class',className);
-        plotCurve({element,color,data,dateScale,valueScale});
-    }
-    
-    plotCandles(candles:Candle[],className:string){
-        const {svg,dateScale,valueScale,chartWidth} = this;
-        const candleWidth = 0.6 * chartWidth / candles.length;
-        svg.selectAll(className).remove();
-        const element = svg.append('g').attr('class',className);
-        plotCandles({element,candles,dateScale,valueScale,candleWidth});
-    }
-    
-    plotPivots(candles:Candle[],className:string,color:string,property:string){
-        const {svg,dateScale,valueScale,chartWidth} = this;
-        const candleWidth = 4.266666666666667;
-        svg.selectAll(className).remove();
-        const element = svg.append('g').attr('class',className);
-        const lines = element.selectAll('line').data(candles);
-        lines.enter().append('line');
-        lines
-            .attr('y1',datum => valueScale(datum[property]))
-            .attr('y2',datum => valueScale(datum[property]))
-            .attr('x1',datum => dateScale(datum.date)-2.5*candleWidth)
-            .attr('x2',datum => dateScale(datum.date)+2.5*candleWidth)
-            .attr('stroke',color)
-            .style('stroke-dasharray',('3,3'));
-    }
-    
-    plotDateAxis(className:string){
-        const {svg,dateScale} = this;
-        svg.selectAll(className).remove();
-        const element = svg.append('g').attr('class',className);
-        plotDateAxis({element,dateScale});
-    }
-    
-    plotValueAxis(className:string,ticks:number){
-        const {svg,valueScale} = this;
-        const translate = this.padding.left + this.chartWidth;
-        svg.selectAll(className).remove();
-        const element = svg.append('g')
-            .attr('class',className)
-            .attr('transform','translate('+translate+',0)');
-        plotValueAxis({element,valueScale,ticks});
-    }
-    
-    plotCrossHair(){
-        const {svg,dateScale,height,width} = this;
+    private plotCrossHair(){
+        const {svg,dateScale,height,width,padding,slabs} = this;
         svg.selectAll('.cross-hair').remove();
         this.crossHair = this.svg.append('g').attr('class','cross-hair')
-        this.crossHair.append('line').attr('id','x-cross-hair');
-        this.crossHair.append('line').attr('id','y-cross-hair');
-        this.crossHair.append('text').attr('class','x-value');
-        this.crossHair.append('text').attr('class','y-value');
+        this.crossHair.append('line')
+            .attr('class','x-cross-hair')
+            .attr('x1',0).attr('x2',width);
+        this.crossHair.append('line')
+            .attr('class','y-cross-hair')
+            .attr('y1',0).attr('y2',height);
+        this.crossHair.append('text').attr('class','x-value')
+            .attr('y',slabs[0].padding.top+15)
+            .attr('font-size',10);
+        this.crossHair.append('text').attr('class','y-value')
+            .attr('x',width-padding.right+20)
+            .attr('font-size',10);
     }
     
-    plotResistanceLines(candles:Candle[]){
-        for(let i = 0; i<candles.length-1 ; i++){
-            const point1 = this.getPoint(candles[i].date,candles[i].low);
-            for(let j=i+1; j<candles.length; j++){
-                let point2 = this.getPoint(candles[j].date,candles[j].low);
-                let line = this.getLine(point1,point2);
-                for(let k=i+1;k<=j-1;k++){
-                    let point12 = this.getPoint(candles[k].date,candles[k].low);
-                    let distance = (point12.x*line.slope+line.intercept) - point12.y;
-                    if(distance > -0.0001 && distance < 0.0001){
-                        let point3;
-                        if(line.slope === 0){
-                            console.log(candles[i].date+', '+candles[k].date+', '+candles[j].date);
-                            point3 = {x:this.width,y:line.intercept};
-                            this.plotLine(point1,point3,'support','black');
-                        } else if (line.slope > 0 ) {
-                            point3 = {x:-line.intercept/line.slope,y:0};
-                            this.plotLine(point1,point3,'up-trend','#DCD9CD');
-                        } else {
-                            point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
-                            //this.plotLine(point1,point3,'down-trend','cyan');
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    plotSupportLines(candles:Candle[]){
-        
-        const lines = [];
-
-        for(let i = 0; i<candles.length-1 ; i++){
-            const point1 = this.getPoint(candles[i].date,candles[i].low);
-            for(let j=i+1; j<candles.length; j++){
-
-                let point3;
-                let point2 = this.getPoint(candles[j].date,candles[j].low);
-                let line = this.getLine(point1,point2);
-                for(let k=i+1;k<=j-1;k++){
-                    let point12 = this.getPoint(candles[k].date,candles[k].low);
-                    let delta = (point12.x*line.slope+line.intercept) - point12.y;
-                    if(delta > -0.00001 && delta < 0.00001){
-                        if(line.slope === 0){
-                            point3 = {x:this.width,y:line.intercept};
-                            lines.push({point1,point12,point3});
-                        } else if (line.slope > 0 ) {
-                            point3 = {x:-line.intercept/line.slope,y:0};
-                            lines.push({point1,point12,point3});
-                        }
-                    }
-                    // if(distance > -0.00001 && distance < 0.00001){
-                    //     let point3;
-                    //     if(line.slope === 0){
-                    //         point3 = {x:this.width,y:line.intercept};
-                    //         this.plotLine(point1,point3,'support','black');
-                    //     } else if (line.slope > 0 ) {
-                    //         point3 = {x:-line.intercept/line.slope,y:0};
-                    //         this.plotLine(point1,point3,'support-trend','#DCD9CD');
-                    //     } else {
-                    //         // point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
-                    //         // this.plotLine(point1,point3,'down-trend','#DCD9CD');
-                    //     }
-                    // }
-                }
-                
-                point2 = this.getPoint(candles[j].date,candles[j].high);
-                line = this.getLine(point1,point2);
-                for(let k=i+1;k<=j-1;k++){
-                    let point12 = this.getPoint(candles[k].date,candles[k].low);
-                    let distance = (point12.x*line.slope+line.intercept) - point12.y;
-                    if(distance > -0.00001 && distance < 0.00001){
-                        if(line.slope === 0){
-                            point3 = {x:this.width,y:line.intercept};
-                            lines.push({point1,point12,point3});
-                        } else if (line.slope > 0 ) {
-                            point3 = {x:-line.intercept/line.slope,y:0};
-                            lines.push({point1,point12,point3});
-                        }
-                    }
-                }
-
-
-            }
-        }
-        
-        for(let i = 0; i<lines.length ; i++){
-            let priority;
-            let color;
-            var {point1,point12,point3} = lines[i];
-            if(point1.y === point3.y){
-                priority = 3;
-            } else {
-                priority = lines.filter(function(line){
-                    return line.point1.x === point1.x &&
-                    line.point1.y === point1.y &&
-                    line.point3.x === point3.x &&
-                    line.point3.y === point3.y;
-                }).length;
-            }
-            lines[i].priority = priority;
-        }
-        // lines.filter(line => line.priority===1).forEach(line => {
-        //     const {point1,point3} = line;
-        //     this.plotLine(point1,point3,'support','#DCD9CD');
-        // });
-        lines.filter(line => line.priority!==1).forEach(line => {
-            const {point1,point3} = line;
-            this.plotLine(point1,point3,'support','black');
-            console.log(line);
-        });
-    }
-    
-    plotLine(point1:Point,point2:Point,className:string,color:string){
-        this.svg.append('g')
-            .attr('class',className)
-            .append('line')
-                .attr('x1',point1.x)
-                .attr('y1',-point1.y)
-                .attr('x2',point2.x)
-                .attr('y2',-point2.y)
-                .attr('stroke',color)
-                .style('stroke-dasharray',('3,3'))
-                .style('stroke-opacity', 0.9);
-    }
-    
-    private trackMouseMove(){
-        const {svg,dateScale,valueScale,width,height,padding} = this;
+    private trackMouseMovement(){
+        const {svg,dateScale,valueScales,width,height,padding,slabs} = this;
+        const valueScale = valueScales[0];
         const self = this;
         svg.on('mousemove',function(){
             if(self.mouseMoveHandler || self.crossHair){
@@ -276,26 +112,270 @@ export class Chart{
                         self.mouseMoveHandler(date);
                     }
                     if(self.crossHair){
-                        self.crossHair.select('#y-cross-hair')
-                            .attr('x1',dateScale(date)).attr('x2',dateScale(date))
-                            .attr('y1',0).attr('y2',height);
-                        self.crossHair.select('#x-cross-hair')
-                            .attr('x1',0).attr('x2',width)
-                            .attr('y1',y).attr('y2',y);
-                        self.crossHair.select('.y-value')
-                            .attr('x',width-padding.right+30)
-                            .attr('y',y)
-                            .attr('font-size',10)
-                            .text(Math.round(value*100)/100);
-                        self.crossHair.select('.x-value')
-                            .attr('x',x)
-                            .attr('y',padding.top)
-                            .attr('font-size',10)
-                            .text(moment(date).format('M/D'));
+                        self.crossHair.select('.y-cross-hair').attr('x1',dateScale(date)).attr('x2',dateScale(date));
+                        self.crossHair.select('.x-cross-hair').attr('y1',y).attr('y2',y);
+                        self.crossHair.select('.y-value').attr('y',y).text(Math.round(value*100)/100);
+                        self.crossHair.select('.x-value').attr('x',x).text(moment(date).format('M/D'));
                     }
                 }
             }
         });
     }
+    
+    plotDateAxis(className:string){
+        const {svg,dateScale} = this;
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        const dateAxis =  d3.svg.axis()
+            .scale(dateScale)
+            .tickValues(dateScale.domain().filter((_,index,array) => !(index%5) || index == array.length-1))
+            .tickFormat(dateString => moment(dateString).format('M/D'));
+        dateAxis(element);
+    }
+    
+    plotValueAxis(className:string,ticks:number,slab:number){
+        const {svg,valueScales} = this;
+        const valueScale = valueScales[slab];
+        const translate = this.padding.left + this.chartWidth + 10;
+        svg.selectAll(className).remove();
+        const element = svg.append('g')
+            .attr('class',className)
+            .attr('transform','translate('+translate+',0)');
+        const valueAxis = d3.svg.axis()
+            .scale(valueScale)
+            .orient('right')
+            .ticks(ticks);
+        valueAxis(element);
+    }
+    
+    plotCandles(candles:Candle[],className:string,slab:number){
+
+        const {svg,dateScale,valueScales,chartWidth} = this;
+        const valueScale = valueScales[slab];
+        const candleWidth = 0.6 * chartWidth / candles.length;
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        
+        const candleStems = element.selectAll('line.candle-stem').data(candles);
+        candleStems.exit().remove();
+        candleStems.enter().append('line').attr('class','candle-stem');
+        candleStems
+            .attr('x1',candle => dateScale(candle.date))
+            .attr('y1',candle => valueScale(candle.high))
+            .attr('x2',candle => dateScale(candle.date))
+            .attr('y2',candle => valueScale(candle.low))
+            .attr('stroke','black');
+            
+        const candleBodies = element.selectAll('rect.candle-body').data(candles);
+        candleBodies.exit().remove();
+        candleBodies.enter().append('rect').attr('class','candle-body');
+        candleBodies
+            .attr('x',candle => dateScale(candle.date) - 0.5 * candleWidth)
+            .attr('y',candle => valueScale(d3.max([candle.open,candle.close])))
+            .attr('width',_ => candleWidth)
+            .attr('height',candle => ((valueScale(d3.min([candle.open,candle.close])) - valueScale(d3.max([candle.open,candle.close]))) || 0.01))
+            .attr('stroke','black')
+            .attr('fill',candle => candle.open > candle.close ? 'black' : 'white');
+
+    }
+    
+    plotCurve(data:CurvePlotData[],className:string,color:string,slab:number){
+
+        const {svg,dateScale,valueScales} = this;
+        const valueScale = valueScales[slab];
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        
+        const pathGenerator = d3.svg.line().interpolate('linear');
+        
+        const pathMapper = () => {
+            const coOrdinatesArray = data.map(datum => {
+                const coOrdinates:[number,number]=[0,0];
+                coOrdinates[0] = dateScale(datum.date);
+                coOrdinates[1] = valueScale(datum.value);
+                return coOrdinates;
+            });
+            return pathGenerator(coOrdinatesArray);
+        };
+        
+        element.append('path')
+            .attr('stroke',color)
+            .attr('fill','none')
+            .attr('d',pathMapper);
+
+    }
+    
+    plotPivots(candles:Candle[],className:string,color:string,property:string,candleWidth:number,slab:number){
+        const {svg,dateScale,valueScales,chartWidth} = this;
+        const valueScale = valueScales[slab];
+        svg.selectAll(className).remove();
+        const element = svg.append('g').attr('class',className);
+        const lines = element.selectAll('line').data(candles);
+        lines.enter().append('line');
+        lines
+            .attr('y1',datum => valueScale(datum[property]))
+            .attr('y2',datum => valueScale(datum[property]))
+            .attr('x1',datum => dateScale(datum.date)-2.5*candleWidth)
+            .attr('x2',datum => dateScale(datum.date)+2.5*candleWidth)
+            .attr('stroke',color)
+            .style('stroke-dasharray',('3,3'));
+    }
+    
+    // onMouseMove(handler:(date:string)=>void){
+    //     this.mouseMoveHandler = handler;
+    // }
+    
+    // getPoint(date:string,value:number,slab:number){
+    //     return {
+    //         x:this.dateScale(date),
+    //         y:-this.valueScales[slab](value)
+    //     };
+    // }
+    
+    // getLine(point1:Point,point2:Point){
+    //     const slope = (point2.y - point1.y)/(point2.x - point1.x);
+    //     return {
+    //         slope,
+    //         intercept: point1.y - slope*point1.x
+    //     };
+    // }
+    
+
+    
+    
+
+    
+
+    
+
+    
+
+    
+    // plotResistanceLines(candles:Candle[],slab:number){
+    //     for(let i = 0; i<candles.length-1 ; i++){
+    //         const point1 = this.getPoint(candles[i].date,candles[i].low,slab);
+    //         for(let j=i+1; j<candles.length; j++){
+    //             let point2 = this.getPoint(candles[j].date,candles[j].low,slab);
+    //             let line = this.getLine(point1,point2);
+    //             for(let k=i+1;k<=j-1;k++){
+    //                 let point12 = this.getPoint(candles[k].date,candles[k].low,slab);
+    //                 let distance = (point12.x*line.slope+line.intercept) - point12.y;
+    //                 if(distance > -0.0001 && distance < 0.0001){
+    //                     let point3;
+    //                     if(line.slope === 0){
+    //                         console.log(candles[i].date+', '+candles[k].date+', '+candles[j].date);
+    //                         point3 = {x:this.width,y:line.intercept};
+    //                         this.plotLine(point1,point3,'support','black');
+    //                     } else if (line.slope > 0 ) {
+    //                         point3 = {x:-line.intercept/line.slope,y:0};
+    //                         this.plotLine(point1,point3,'up-trend','#DCD9CD');
+    //                     } else {
+    //                         point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
+    //                         //this.plotLine(point1,point3,'down-trend','cyan');
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    
+    // plotSupportLines(candles:Candle[],slab:number){
+    //     const lines = [];
+
+    //     for(let i = 0; i<candles.length-1 ; i++){
+    //         const point1 = this.getPoint(candles[i].date,candles[i].low,slab);
+    //         for(let j=i+1; j<candles.length; j++){
+
+    //             let point3;
+    //             let point2 = this.getPoint(candles[j].date,candles[j].low,slab);
+    //             let line = this.getLine(point1,point2);
+    //             for(let k=i+1;k<=j-1;k++){
+    //                 let point12 = this.getPoint(candles[k].date,candles[k].low,slab);
+    //                 let delta = (point12.x*line.slope+line.intercept) - point12.y;
+    //                 if(delta > -0.00001 && delta < 0.00001){
+    //                     if(line.slope === 0){
+    //                         point3 = {x:this.width,y:line.intercept};
+    //                         lines.push({point1,point12,point3});
+    //                     } else if (line.slope > 0 ) {
+    //                         point3 = {x:-line.intercept/line.slope,y:0};
+    //                         lines.push({point1,point12,point3});
+    //                     }
+    //                 }
+    //                 // if(distance > -0.00001 && distance < 0.00001){
+    //                 //     let point3;
+    //                 //     if(line.slope === 0){
+    //                 //         point3 = {x:this.width,y:line.intercept};
+    //                 //         this.plotLine(point1,point3,'support','black');
+    //                 //     } else if (line.slope > 0 ) {
+    //                 //         point3 = {x:-line.intercept/line.slope,y:0};
+    //                 //         this.plotLine(point1,point3,'support-trend','#DCD9CD');
+    //                 //     } else {
+    //                 //         // point3 = {x:(-this.height+this.padding.bottom-line.intercept)/line.slope,y:-this.height+this.padding.bottom};
+    //                 //         // this.plotLine(point1,point3,'down-trend','#DCD9CD');
+    //                 //     }
+    //                 // }
+    //             }
+                
+    //             point2 = this.getPoint(candles[j].date,candles[j].high,slab);
+    //             line = this.getLine(point1,point2);
+    //             for(let k=i+1;k<=j-1;k++){
+    //                 let point12 = this.getPoint(candles[k].date,candles[k].low,slab);
+    //                 let distance = (point12.x*line.slope+line.intercept) - point12.y;
+    //                 if(distance > -0.00001 && distance < 0.00001){
+    //                     if(line.slope === 0){
+    //                         point3 = {x:this.width,y:line.intercept};
+    //                         lines.push({point1,point12,point3});
+    //                     } else if (line.slope > 0 ) {
+    //                         point3 = {x:-line.intercept/line.slope,y:0};
+    //                         lines.push({point1,point12,point3});
+    //                     }
+    //                 }
+    //             }
+
+
+    //         }
+    //     }
+        
+    //     for(let i = 0; i<lines.length ; i++){
+    //         let priority;
+    //         let color;
+    //         var {point1,point12,point3} = lines[i];
+    //         if(point1.y === point3.y){
+    //             priority = 3;
+    //         } else {
+    //             priority = lines.filter(function(line){
+    //                 return line.point1.x === point1.x &&
+    //                 line.point1.y === point1.y &&
+    //                 line.point3.x === point3.x &&
+    //                 line.point3.y === point3.y;
+    //             }).length;
+    //         }
+    //         lines[i].priority = priority;
+    //     }
+    //     // lines.filter(line => line.priority===1).forEach(line => {
+    //     //     const {point1,point3} = line;
+    //     //     this.plotLine(point1,point3,'support','#DCD9CD');
+    //     // });
+    //     lines.filter(line => line.priority!==1).forEach(line => {
+    //         const {point1,point3} = line;
+    //         this.plotLine(point1,point3,'support','black');
+    //         console.log(line);
+    //     });
+    // }
+    
+    // plotLine(point1:Point,point2:Point,className:string,color:string){
+    //     this.svg.append('g')
+    //         .attr('class',className)
+    //         .append('line')
+    //             .attr('x1',point1.x)
+    //             .attr('y1',-point1.y)
+    //             .attr('x2',point2.x)
+    //             .attr('y2',-point2.y)
+    //             .attr('stroke',color)
+    //             .style('stroke-dasharray',('3,3'))
+    //             .style('stroke-opacity', 0.9);
+    // }
+    
+
     
 }
